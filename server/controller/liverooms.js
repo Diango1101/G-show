@@ -73,20 +73,51 @@ const createRooms = async (liveromms, loginName) => {
 
 }
 /**
- * 获取作品列表
+ * 获取直播间列表
  */
 const getLiveRooms = async () => {
-    const sql = `select * from liverooms where status=1 order by id,status DESC`
+    const sql = `select * from liverooms where status>0 order by status DESC`
     const res = await exec(sql)
     return new SuccessModel({
         data: res
     })
 }
 /**
+ * 获取被封停直播间列表
+ */
+const getStopRooms = async () => {
+    const sql = `select * from liverooms where status=0 order by id DESC`
+    const res = await exec(sql)
+    return new SuccessModel({
+        data: res
+    })
+}
+/**
+ * 获取未被推荐直播间列表
+ */
+const getUnTJRooms = async () => {
+    const sql = `select * from liverooms where status=1 order by id DESC`
+    const res = await exec(sql)
+    return new SuccessModel({
+        data: res
+    })
+}
+/**
+ * 获取已推荐直播间列表
+ */
+const getTJLiveRooms = async () => {
+    const sql = `select * from liverooms where status=2 order by id DESC`
+    const res = await exec(sql)
+    return new SuccessModel({
+        data: res
+    })
+}
+
+/**
  * 获取个人直播间信息
  */
-const getLiveRoom = async (roomid) => {
-    const sql = `select * from liverooms where id='${roomid}'`
+const getLiveRoom = async (username) => {
+    const sql = `select * from liverooms where author='${username}'`
     const res = await exec(sql)
     return new SuccessModel({
         data: res[0]
@@ -147,13 +178,49 @@ const TuijianRooms = async (param) => {
         message: `成功将${res.affectedRows}个直播间设为推荐`
     })
 }
+/**
+ * 解除推荐直播间（可单个或多个）
+ */
+const UnTuijianRooms = async (param) => {
+    const ids = param.ids
+    if (!Array.isArray(ids)) {
+        return new ErrorModel({
+            message: '参数异常',
+            httpCode: 400
+        })
+    }
+    const sql = `update liverooms set status= 1 where id in (${ids.join(',')})`
+    const res = await exec(sql)
+    return new SuccessModel({
+        message: `成功将${res.affectedRows}个直播间解除推荐`
+    })
+}
+
+/**
+ * 解封直播间（可单个或多个）
+ */
+const JieFengRooms = async (param) => {
+    const ids = param.ids
+    if (!Array.isArray(ids)) {
+        return new ErrorModel({
+            message: '参数异常',
+            httpCode: 400
+        })
+    }
+    const sql = `update liverooms set status= 1 where id in (${ids.join(',')})`
+    const res = await exec(sql)
+    return new SuccessModel({
+        message: `成功将${res.affectedRows}个直播间解封`
+    })
+}
 
 /**
  * 修改个人直播间设置
  */
 const UpdateRoom = async (room) => {
-    const { title, description, roomavatar = 'http://localhost:8888/public/images/liveroom.png', roomid } = room
-    const sql = `update liverooms set title='${title}',description='${description}',roomavatar='${roomavatar}' where id='${roomid}'`
+    const { title, description, roomavatar = 'http://localhost:8888/public/images/liveroom.png', author } = room
+    const sql = `update liverooms set title='${title}',description='${description}',roomavatar='${roomavatar}' where author='${author}'`
+    console.log(sql)
     const res = await exec(sql)
     if (res.affectedRows) {
         return new SuccessModel({
@@ -172,9 +239,14 @@ const UpdateRoom = async (room) => {
 module.exports = {
     createRooms,
     getLiveRooms,
+    getStopRooms,
+    getUnTJRooms,
+    getTJLiveRooms,
     getLiveRoom,
     deleteRooms,
     StopRooms,
     TuijianRooms,
-    UpdateRoom
+    UnTuijianRooms,
+    UpdateRoom,
+    JieFengRooms
 }

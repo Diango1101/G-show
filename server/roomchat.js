@@ -32,7 +32,11 @@ function filterFromroomId(roomid, arr) {
 // { id: 92,
 //     username: 'hmy',
 //     avatar: 'http://localhost:8888/myUpload/order_org.png' }
+
+
 // 需添加roomId ,isLives
+
+
 const server = ws.createServer(function (connection) {
     connection.user = {}
 

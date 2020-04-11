@@ -10,9 +10,9 @@ const RegisterForm = LoadableComponent(import('./RegisterForm'))
 const Background = LoadableComponent(import('@/components/Background'))
 
 const imgs = [
-    `${process.env.REACT_APP_BASE_URL}/public/images/bg1.jpg`,
-    `${process.env.REACT_APP_BASE_URL}/public/images/bg2.jpg`,
-    `${process.env.REACT_APP_BASE_URL}/public/images/bg3.jpg`,
+    `${process.env.REACT_APP_BASE_URL}/public/images/b1.jpg`,
+    `${process.env.REACT_APP_BASE_URL}/public/images/b2.jpg`,
+    `${process.env.REACT_APP_BASE_URL}/public/images/b3.jpg`,
 ]
 
 
@@ -42,7 +42,7 @@ class Login extends React.Component {
     render() {
         const { show } = this.state
         return (
-            <Background url={`${process.env.REACT_APP_BASE_URL}/public/images/login_bg1.jpg`}>
+            <Background url={`${process.env.REACT_APP_BASE_URL}/public/images/login_bg3.jpg`}>
                 <div className="login-container">
                     <div className={`box ${show === 'login' ? 'active' : ''}`}>
                         <LoginForm toggleShow={this.toggleShow} />

@@ -10,9 +10,15 @@ const store = connect(
 )
 
 @store @Form.create()
-class CreateModal extends Component {
-    state = {
-        uploading: false
+class CreateTobeAnchorModal extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            uploading: false
+        }
+    }
+    componentDidMount() {
+        console.log('userrrr', this.props.user)
     }
     onCancel = () => {
         this.props.form.resetFields()
@@ -21,14 +27,24 @@ class CreateModal extends Component {
     onOk = () => {
         this.props.form.validateFieldsAndScroll((errors, values) => {
             if (!errors) {
-                this.onCreate(values)
+                let { title, description, roomavatar, userId, author } = values
+                let value = {
+                    userid: userId,
+                    room: {
+                        title: title,
+                        description: description,
+                        roomavatar: roomavatar,
+                        author: author
+                    }
+                }
+                this.onCreate(value)
             }
         })
     }
     onCreate = async (values) => {
-        const res = await json.post('/liverooms/create', values)
+        const res = await json.post('/user/tobeAnchor', values)
         if (res.status === 0) {
-            this.props.onCreated()  //更新外面的数据
+            message.success('亲爱的用户，申请成功，请等待超管批准哦')
             this.onCancel()
         }
     }
@@ -44,6 +60,7 @@ class CreateModal extends Component {
     }
     render() {
         const { uploading } = this.state
+        const { user } = this.props
         const formItemLayout = {
             labelCol: { span: 6 },
             wrapperCol: { span: 14 },
@@ -70,25 +87,35 @@ class CreateModal extends Component {
                     this.setState({
                         uploading: false
                     })
-                    message.success('上传头像成功')
+                    message.success('上传房间封面成功')
                 } else if (info.file.status === 'error') {
                     this.setState({
                         uploading: false
                     })
-                    message.error(info.file.response.message || '上传头像失败')
+                    message.error(info.file.response.message || '上传房间封面失败')
                 }
             }
         }
         return (
             <Modal
                 visible={this.props.visible}
-                title='创建直播间'
+                title='申请直播间'
                 centered
                 onCancel={this.onCancel}
-                okButtonProps={{ disabled: !this.props.user.isAdmin && !this.props.isAnchor }}
+                // okButtonProps={{ disabled: !this.props.user.isAdmin && !this.props.isAnchor }}
                 onOk={this.onOk}
             >
                 <Form {...formItemLayout}>
+                    <Form.Item label={'用户Id'}>
+                        {getFieldDecorator('userId', {
+                            initialValue: user.id,
+                            rules: [
+                                { required: true, message: '请输入直播间名称' },
+                            ]
+                        })(
+                            <Input disabled={true} placeholder='请输入直播间名称' />
+                        )}
+                    </Form.Item>
                     <Form.Item label={'直播间名称'}>
                         {getFieldDecorator('title', {
                             rules: [
@@ -96,6 +123,16 @@ class CreateModal extends Component {
                             ]
                         })(
                             <Input placeholder='请输入直播间名称' />
+                        )}
+                    </Form.Item>
+                    <Form.Item label={'主播名称'}>
+                        {getFieldDecorator('author', {
+                            initialValue: user.username,
+                            rules: [
+                                { required: true, message: '请输入主播名称' },
+                            ]
+                        })(
+                            <Input disabled={true} placeholder='请输入主播名称' />
                         )}
                     </Form.Item>
                     <Form.Item label={'直播间描述'}>
@@ -143,4 +180,4 @@ const styles = {
     },
 }
 
-export default CreateModal;
+export default CreateTobeAnchorModal;

@@ -49,9 +49,9 @@ class MySider extends React.Component {
         return (
             <div className={`my-sider ${theme}`}>
                 <div className={`sider-menu-logo ${theme}`}>
-                    <a href="https://ant.design/docs/react/introduce-cn" target="_blank" rel="noopener noreferrer">
+                    <a href="https://github.com/Diango1101" target="_blank" rel="noopener noreferrer">
                         <img src={require('../../assets/images/antd.svg')} alt="" />
-                        <h1>Ant Design</h1>
+                        <h1>G-Show live</h1>
                     </a>
                 </div>
                 <Menu theme={theme} mode="inline" selectedKeys={[activeMenu]} style={{ paddingTop: 16 }}>

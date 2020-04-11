@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import { Form, Input, Modal, Icon, message, Upload } from 'antd'
+import { Form, Input, Modal, Icon, message, Upload, InputNumber, Select } from 'antd'
 import { json } from '../../utils/ajax'
 import { connect } from 'react-redux'
 import { isAuthenticated, authenticateSuccess } from '../../utils/session'
 const { TextArea } = Input;
+const { Option } = Select;
 
 const store = connect(
     (state) => ({ user: state.user })
@@ -26,8 +27,10 @@ class CreateModal extends Component {
         })
     }
     onCreate = async (values) => {
-        const res = await json.post('/liverooms/create', values)
+        console.log(values)
+        const res = await json.post('/presents/addPresent', values)
         if (res.status === 0) {
+            message.success(`新增礼物成功`)
             this.props.onCreated()  //更新外面的数据
             this.onCancel()
         }
@@ -48,11 +51,12 @@ class CreateModal extends Component {
             labelCol: { span: 6 },
             wrapperCol: { span: 14 },
         }
+        const { presentInfo } = this.props
         const { getFieldDecorator, getFieldValue } = this.props.form
 
-        const roomavatar = getFieldValue('roomavatar')
+        const presentAvatar = getFieldValue('presentAvatar')
         const uploadProps = {
-            name: "roomavatar",
+            name: "presentAvatar",
             listType: "picture-card",
             headers: {
                 Authorization: `Bearer ${isAuthenticated()}`,
@@ -79,42 +83,86 @@ class CreateModal extends Component {
                 }
             }
         }
+        const presentTypes = ['食物', '饮品', '电子产品', '书籍', '点券', '作者的嘿嘿嘿']
+        const presentTypeOptions = []
+        presentTypes.forEach((element, index) => {
+            presentTypeOptions.push(
+                <Option key={index} value={element}>
+                    {element}
+                </Option>
+            )
+        })
         return (
             <Modal
                 visible={this.props.visible}
-                title='创建直播间'
+                title='新增礼物'
                 centered
                 onCancel={this.onCancel}
                 okButtonProps={{ disabled: !this.props.user.isAdmin && !this.props.isAnchor }}
                 onOk={this.onOk}
             >
                 <Form {...formItemLayout}>
-                    <Form.Item label={'直播间名称'}>
-                        {getFieldDecorator('title', {
+                    <Form.Item label={'礼物名称'}>
+                        {getFieldDecorator('presentName', {
                             rules: [
-                                { required: true, message: '请输入直播间名称' },
+                                { required: true, message: '请输入礼物名称' },
                             ]
                         })(
-                            <Input placeholder='请输入直播间名称' />
+                            <Input placeholder='请输入礼物名称' />
                         )}
                     </Form.Item>
-                    <Form.Item label={'直播间描述'}>
-                        {getFieldDecorator('description', {
+                    <Form.Item label={'礼物描述'}>
+                        {getFieldDecorator('presentDesc', {
                             rules: [
-                                { required: true, message: '直播间描述' },
+                                { required: true, message: '请输入礼物描述' },
                             ]
                         })(
-                            <TextArea placeholder='直播间描述' />
+                            <TextArea placeholder='请输入礼物描述' />
                         )}
                     </Form.Item>
-                    <Form.Item label={'直播间封面'} {...formItemLayout}>
-                        {getFieldDecorator('roomavatar', {
+                    <Form.Item label={'礼物图片'} {...formItemLayout}>
+                        {getFieldDecorator('presentAvatar', {
                             rules: [{ required: true, message: '请上传直播间封面' }],
                             getValueFromEvent: this._normFile,     //将上传的结果作为表单项的值（用normalize报错了，所以用的这个属性）
                         })(
                             <Upload {...uploadProps} style={styles.avatarUploader}>
-                                {roomavatar ? <img src={roomavatar} alt="roomavatar" style={styles.roomavatar} /> : <Icon style={styles.icon} type={uploading ? 'loading' : 'plus'} />}
+                                {presentAvatar ? <img src={presentAvatar} alt="presentAvatar" style={styles.presentAvatar} /> : <Icon style={styles.icon} type={uploading ? 'loading' : 'plus'} />}
                             </Upload>
+                        )}
+                    </Form.Item>
+                    <Form.Item label={'礼物种类'}>
+                        {getFieldDecorator('presentType', {
+                            rules: [
+                                { required: true, message: '请输入礼物种类' },
+                            ]
+                        })(
+                            <Select
+                                showSearch
+                                style={{ width: 150 }}
+                                placeholder="请选择"
+                            >
+                                {presentTypeOptions}
+                            </Select>
+                        )}
+                    </Form.Item>
+                    <Form.Item label={'礼物数量'} >
+                        {getFieldDecorator('presentCounts', {
+                            initialValue: 1,
+                            rules: [
+                                { required: true, message: '请输入礼物数量' },
+                            ]
+                        })(
+                            <InputNumber placeholder='1' min={1} max={10000} />
+                        )}
+                    </Form.Item>
+                    <Form.Item label={'单品积分'}>
+                        {getFieldDecorator('presentValue', {
+                            initialValue: 10,
+                            rules: [
+                                { required: true, message: '请输入单品积分' },
+                            ]
+                        })(
+                            <InputNumber placeholder='10' min={1} max={100000} />
                         )}
                     </Form.Item>
                 </Form>
@@ -137,7 +185,7 @@ const styles = {
         fontSize: 28,
         color: '#999'
     },
-    roomavatar: {
+    presentAvatar: {
         maxWidth: '100%',
         maxHeight: '100%',
     },

@@ -16,6 +16,7 @@ const usersColumns = [
     'lastLoginTime',
     'isAdmin',
     'isAnchor',
+    'isToBeAnchor',
     'avatar',
     'birth',
     'phone',
@@ -157,12 +158,20 @@ const login = async function (username, password, ctx) {
  * @param {*} param 
  */
 const getUsers = async (param) => {
-    const { current = 0, pageSize = 10, username, startTime, endTime } = param
+    const { current = 0, pageSize = 10, username, startTime, endTime, isToBeAnchor } = param
     let sql = `select SQL_CALC_FOUND_ROWS ${usersColumns.join(',')} from users where registrationTime between ${startTime || 0} and ${endTime || Date.now()} `
     if (username) {
         sql += `and username like '%${username}%' `
     }
+    if (isToBeAnchor != 'null') {
+        sql += `and isToBeAnchor = '${isToBeAnchor}'`
+    }
+    console.log(isToBeAnchor)
+    if (isToBeAnchor == '0') {
+        sql += `and isToBeAnchor = '${isToBeAnchor}'`
+    }
     sql += `order by registrationTime desc limit ${current * pageSize},${pageSize}`
+    console.log(sql)
     const res = await exec(sql)
     const sql2 = 'select found_rows() as total'
     const res2 = await exec(sql2)
@@ -290,31 +299,93 @@ const getAllUsers = async () => {
 /**
  * 申请成为主播
  */
-
 const beAnchor = async (userid, room) => {
-    const sql1 = `update users set isAnchor=1 where id=${userid}`
-    const sql2 = `insert into liverooms (title, description, createTime, author,roomavatar) values
-    ('${room.title}', '${room.description}', '${Date.now()}','${room.author}', ${room.roomavatar})`
-    console.log(sql1, sql2)
+    const { roomavatar = 'http://localhost:8888/public/images/liveroom.png' } = room
+    const sql1 = `insert into tobeanchors (userId,title, description, createTime, author,roomavatar) values
+    ('${userid}','${room.title}', '${room.description}', '${Date.now()}','${room.author}', '${roomavatar}')`
+    const sql2 = `update users set isToBeAnchor=1 where id='${userid}'`
     const res = await Promise.all([exec(sql1), exec(sql2)])
     return new SuccessModel({
-        data: res
+        data: res,
+        message: `申请成功`
     })
-
 }
 
 /**
- * 获取用户积分
+ * 获取申请成为主播名单
  */
-const getRecords = async (userid) => {
-    const sql = `select records from users where id=${userid}`
+const gettobeAnchor = async (userid) => {
+    const sql = `select * from tobeanchors where userId='${userid}'`
     const res = await exec(sql)
     return new SuccessModel({
-        data: {
-            record: res[0].records
-        }
+        data: res[0],
+        message: `查询成功`
     })
 }
+
+/**
+ * 超管批准成为主播并开启直播间
+ */
+const AuthAnchor = async (userid, room) => {
+
+    const { roomavatar = 'http://localhost:8888/public/images/liveroom.png', author } = room
+    const isOnly = await verifyOnly(author)
+    if (isOnly) {
+        const sql1 = `update users set isAnchor=1,isToBeAnchor=0 where id=${userid}`
+        const sql2 = `insert into liverooms (title, description, createTime, author,roomavatar) values
+        ('${room.title}', '${room.description}', '${Date.now()}','${room.author}', '${roomavatar}')`
+        const sql3 = `update tobeanchors set status=1 where userId='${userid}'`
+        console.log(sql1, sql2, sql3)
+        const res = await Promise.all([exec(sql1), exec(sql2), exec(sql3)])
+        return new SuccessModel({
+            data: res,
+            message: `批准并开通'${room.author}'的直播间`
+        })
+    } else {
+        return new ErrorModel({
+            message: '该用户已有直播间，请禁止额外申请',
+            httpCode: 500
+        })
+    }
+}
+/**
+ * 超管禁止成为主播
+ */
+const notAuth = async (userid) => {
+    const sql1 = `update users set isAnchor=0,isToBeAnchor=0 where id=${userid}`
+
+    const sql2 = `delete from tobeanchors where userId='${userid}'`
+    console.log(sql1, sql2)
+    const res = await Promise.all([exec(sql1), exec(sql2)])
+    return new SuccessModel({
+        data: res,
+        message: `禁止开通`
+    })
+}
+/**
+ * 验证是否已开设直播间
+ */
+const verifyOnly = async (author) => {
+    const sql = `select * from liverooms where author='${author}'`
+    const res = await exec(sql)
+    if (res.length == 0) {
+        return true
+    } else {
+        return false
+    }
+}
+// /**
+//  * 获取用户积分
+//  */
+// const getRecords = async (userid) => {
+//     const sql = `select records from users where id=${userid}`
+//     const res = await exec(sql)
+//     return new SuccessModel({
+//         data: {
+//             record: res[0].records
+//         }
+//     })
+// }
 
 /**
  * 获取用户积分,直接返回数据
@@ -338,6 +409,8 @@ module.exports = {
     deleteUsers,
     getAllUsers,
     beAnchor,
-    getRecords,
+    gettobeAnchor,
+    AuthAnchor,
+    notAuth,
     getRecordsIN
 }

@@ -62,7 +62,7 @@ export function initWebSocket(user) {    //初始化websocket对象
                     icon: <Avatar src={data.msg.userAvatar} />
                 })
             }
-            console.log(11, data)
+            console.log('上线消息', data)
         }
         dispatch(setWebsocket(websocket))
         dispatch(initChatList())

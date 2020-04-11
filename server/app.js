@@ -12,6 +12,7 @@ const jwt = require('koa-jwt')
 const errorHandle = require('./middlewares/errorHandle')
 const koaStatic = require('koa-static')
 const chat = require('./chat')
+const roomchat = require('./roomchat')
 const InitManager = require('./utils/init')
 
 
@@ -41,8 +42,8 @@ app.use(cors({ credentials: true })); //前端调试时解决跨域，上线不�
 
 //验证token登陆,unless是不需要验证的路由，每一项是匹配路由的正则
 const unPath = [/^\/$/, /public/, /checkName/, /register/, /getIpInfo/, /login/]
-const buildFiles = [/\.js$/, /\.css$/, /\.less$/, /\.ico/, /\.json$/, /static/]  //前端打包后不需要验证的资源
-// app.use(jwt({ secret: TOKEN_SECRETKEY, cookie: 'sessionId' }).unless({ path: unPath.concat(buildFiles) }));
+const buildFiles = [/\.js$/, /\.css$/, /\.less$/, /\.ico/, /\.json$/, /static/, /\.jpg/]  //前端打包后不需要验证的资源
+app.use(jwt({ secret: TOKEN_SECRETKEY, cookie: 'sessionId' }).unless({ path: unPath.concat(buildFiles) }));
 
 
 // routes  集成化加载

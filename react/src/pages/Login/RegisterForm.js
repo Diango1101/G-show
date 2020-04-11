@@ -75,7 +75,7 @@ class RegisterForm extends React.Component {
         const { focusItem } = this.state
         return (
             <div>
-                <h3 className="title">管理员注册</h3>
+                <h3 className="title">注册</h3>
                 <Form hideRequiredMark>
                     <Form.Item
                         help={<Promptbox info={getFieldError('registerUsername') && getFieldError('registerUsername')[0]} />}
@@ -169,7 +169,7 @@ class RegisterForm extends React.Component {
                         </div>
                     </Form.Item>
                 </Form>
-                <div className="footer">欢迎登陆后台管理系统</div>
+                <div className="footer">欢迎登陆G-Show Live</div>
             </div>
         )
     }

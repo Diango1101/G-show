@@ -13,7 +13,7 @@ const MenuItemGroup = Menu.ItemGroup;
 
 const EditInfoModal = LoadableComponent(import('./EditInfoModal'))
 const EditPasswordModal = LoadableComponent(import('./EditPasswordModal'))
-
+const CreateTobeAnchorModal = LoadableComponent(import('./CreateTobeAnchorModal'))
 const store = connect(
     (state) => ({ user: state.user })
 )
@@ -32,7 +32,8 @@ class MyHeader extends React.Component {
             isFullscreen: false,    //控制页面全屏
             color: color,
             infoVisible: false,     //控制修改用户信息的模态框
-            passwordVisible: false   //控制修改密码的模态框
+            passwordVisible: false,   //控制修改密码的模态框
+            TobeAnchorVisible: false    //控制申请主播的模态框
         }
     }
     /**
@@ -92,6 +93,14 @@ class MyHeader extends React.Component {
         })
     }
     /**
+     * 展开/关闭申请主播模态框
+     */
+    toggleTobeAnchorVisible = (visible) => {
+        this.setState({
+            TobeAnchorVisible: visible
+        })
+    }
+    /**
      * 退出登录
      */
     onLogout = () => {
@@ -107,8 +116,9 @@ class MyHeader extends React.Component {
     }
 
     render() {
-        const { isFullscreen, color, infoVisible, passwordVisible } = this.state
+        const { isFullscreen, color, infoVisible, passwordVisible, TobeAnchorVisible } = this.state
         const { user, theme } = this.props
+        console.log('1234', user)
         return (
             <div style={{ background: '#fff', padding: '0 16px' }}>
                 <Icon
@@ -121,7 +131,7 @@ class MyHeader extends React.Component {
                         <ColorPicker color={color} onChange={this.changeColor} />
                     </div>
                     <div style={styles.headerItem}>
-                        <MyIcon type={theme === 'dark' ? 'icon-yueliang1' : 'icon-taiyang'} style={{ fontSize: 24 }} onClick={this.changeTheme}/>
+                        <MyIcon type={theme === 'dark' ? 'icon-yueliang1' : 'icon-taiyang'} style={{ fontSize: 24 }} onClick={this.changeTheme} />
                         {/* <img width={24} src={require(`../../assets/images/${theme}.svg`)} alt='' onClick={this.changeTheme} /> */}
                     </div>
                     <div style={styles.headerItem}>
@@ -136,12 +146,23 @@ class MyHeader extends React.Component {
                                     <Menu.Item key={3} onClick={this.toggleFullscreen}><Icon type={isFullscreen ? 'fullscreen-exit' : 'fullscreen'} />切换全屏</Menu.Item>
                                     <Menu.Item key={4} onClick={this.resetColor}><Icon type="ant-design" />恢复默认主题</Menu.Item>
                                 </MenuItemGroup>
+                                <MenuItemGroup title="个人积分">
+                                    <Menu.Item key={78}><Icon type="radar-chart" />{user.records}分</Menu.Item>
+                                </MenuItemGroup>
+                                <MenuItemGroup title="个人身份">
+
+                                    {(user.isAdmin !== 1) || (<Menu.Item key={79}><Icon type="crown" theme="twoTone" />尊贵的管理员{user.username}</Menu.Item>)}
+                                    {(user.isAnchor !== 1) || (<Menu.Item key={80}><Icon type="experiment" theme="twoTone" />尊贵的主播{user.username}</Menu.Item>)}
+                                    {(user.isAnchor === 1 || user.isAdmin === 1) || (<Menu.Item key={81}><Icon type="environment" theme="twoTone" />普通用户{user.username}</Menu.Item>)}
+                                    {(user.isAnchor === 1) || (<Menu.Item key={82} onClick={() => this.toggleTobeAnchorVisible(true)} ><Icon type="highlight" theme="twoTone" /><block style={styles.tobeAnchor}>申请直播</block></Menu.Item>)}
+                                </MenuItemGroup>
                             </SubMenu>
                         </Menu>
                     </div>
                 </div>
                 <EditInfoModal toggleVisible={this.toggleInfoVisible} visible={infoVisible} />
                 <EditPasswordModal toggleVisible={this.togglePasswordVisible} visible={passwordVisible} />
+                <CreateTobeAnchorModal toggleVisible={this.toggleTobeAnchorVisible} visible={TobeAnchorVisible} />
             </div>
         )
     }
@@ -162,6 +183,9 @@ const styles = {
     avatarBox: {
         display: 'flex',
         alignItems: 'center',
+    },
+    tobeAnchor: {
+        color: 'red'
     }
 }
 

@@ -1,5 +1,5 @@
 const router = require('koa-router')()
-const { createRooms, getLiveRooms, deleteRooms, getLiveRoom, StopRooms, TuijianRooms, UpdateRoom } = require('../controller/liverooms')
+const { createRooms, getLiveRooms, deleteRooms, getLiveRoom, StopRooms, TuijianRooms, UpdateRoom, JieFengRooms, getStopRooms, getUnTJRooms, getTJLiveRooms, UnTuijianRooms } = require('../controller/liverooms')
 const { PositiveIntegerValidator, NotEmptyValidator } = require('./validators/validator')
 const { getUser } = require('../controller/user')
 
@@ -72,10 +72,27 @@ router.get('/list', async function (ctx, next) {
     handleRes(ctx, next, res)
 })
 
-router.get('/:id/OnesLiveRoom', async function (ctx, next) {
-    const v = await new PositiveIntegerValidator().validate(ctx)
-    const id = v.get('path.id')
-    const res = await getLiveRoom(id)
+router.get('/Stopedlist', async function (ctx, next) {
+    const res = await getStopRooms()
+    handleRes(ctx, next, res)
+})
+
+router.get('/UnTJlist', async function (ctx, next) {
+    const res = await getUnTJRooms()
+    handleRes(ctx, next, res)
+})
+
+router.get('/TJlist', async function (ctx, next) {
+    const res = await getTJLiveRooms()
+    handleRes(ctx, next, res)
+})
+
+router.get('/:username/OnesLiveRoom', async function (ctx, next) {
+    const v = await new NotEmptyValidator().validate(ctx, {
+        title: 'username'
+    })
+    const username = v.get('path.username')
+    const res = await getLiveRoom(username)
     handleRes(ctx, next, res)
 })
 
@@ -111,6 +128,22 @@ router.post('/stop', async function (ctx, next) {
     handleRes(ctx, next, res)
 })
 
+router.post('/jiefeng', async function (ctx, next) {
+    const sessionId = ctx.cookies.get('sessionId')
+    const loginName = jwt.verify(sessionId, TOKEN_SECRETKEY).username
+    const isAdminRes = await isAdmin(loginName)
+    if (!isAdminRes) {
+        let ErrorModel = {
+            message: "权限不足",
+            status: 1,
+            httpCode: 500
+        }
+        handleRes(ctx, next, ErrorModel)
+    }
+    const res = await JieFengRooms(ctx.request.body, loginName)
+    handleRes(ctx, next, res)
+})
+
 router.post('/tuijian', async function (ctx, next) {
     const sessionId = ctx.cookies.get('sessionId')
     const loginName = jwt.verify(sessionId, TOKEN_SECRETKEY).username
@@ -124,6 +157,22 @@ router.post('/tuijian', async function (ctx, next) {
         handleRes(ctx, next, ErrorModel)
     }
     const res = await TuijianRooms(ctx.request.body, loginName)
+    handleRes(ctx, next, res)
+})
+
+router.post('/Untuijian', async function (ctx, next) {
+    const sessionId = ctx.cookies.get('sessionId')
+    const loginName = jwt.verify(sessionId, TOKEN_SECRETKEY).username
+    const isAdminRes = await isAdmin(loginName)
+    if (!isAdminRes) {
+        let ErrorModel = {
+            message: "权限不足",
+            status: 1,
+            httpCode: 500
+        }
+        handleRes(ctx, next, ErrorModel)
+    }
+    const res = await UnTuijianRooms(ctx.request.body, loginName)
     handleRes(ctx, next, res)
 })
 

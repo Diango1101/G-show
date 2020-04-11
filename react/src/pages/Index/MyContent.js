@@ -5,9 +5,9 @@ import "./style.less";
 const Footer = Layout.Footer;
 const TabPane = Tabs.TabPane;
 const imgs = [
-    `${process.env.REACT_APP_BASE_URL}/public/images/bg1.jpg`,
-    `${process.env.REACT_APP_BASE_URL}/public/images/bg2.jpg`,
-    `${process.env.REACT_APP_BASE_URL}/public/images/bg3.jpg`
+    `${process.env.REACT_APP_BASE_URL}/public/images/b1.jpg`,
+    `${process.env.REACT_APP_BASE_URL}/public/images/b2.jpg`,
+    `${process.env.REACT_APP_BASE_URL}/public/images/b3.jpg`
 ];
 
 class MyContent extends React.Component {
@@ -72,11 +72,11 @@ class MyContent extends React.Component {
                                         background: "#fff"
                                     }}
                                 >
-                                    React - Admin© {new Date().getFullYear()}
-									Created by 137596665 @qq.com{" "}
+                                    G - Show Live© {new Date().getFullYear()}{' '}
+									Created by 2320165467 @qq.com{" "}
                                     <a
                                         target="_blank"
-                                        href="https://github.com/zhangZhiHao1996/admin"
+                                        href="https://github.com/Diango1101"
                                         rel="noopener noreferrer"
                                     >
                                         <Icon type="github" />

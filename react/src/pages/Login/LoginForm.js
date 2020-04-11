@@ -117,7 +117,7 @@ class LoginForm extends React.Component {
         const { focusItem, code } = this.state
         return (
             <div>
-                <h3 className="title">管理员登录</h3>
+                <h3 className="title">登录</h3>
                 <Form hideRequiredMark>
                     <Form.Item
                         help={<Promptbox info={getFieldError('username') && getFieldError('username')[0]} />}
@@ -207,7 +207,7 @@ class LoginForm extends React.Component {
                     </Form.Item>
                 </Form>
 
-                <div className="footer">欢迎登陆后台管理系统</div>
+                <div className="footer">欢迎登陆G-Show Live</div>
             </div>
         )
     }

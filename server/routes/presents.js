@@ -1,7 +1,7 @@
 const router = require('koa-router')()
-const { addPresent, getAllPresents, deletePresent, getPresents, getAllPresentsRecords } = require('../controller/presents')
+const { addPresent, getAllPresents, deletePresent, getPresents, getAllPresentsRecords, getPresentTypes, updatePresents, getRecordPresentTypes } = require('../controller/presents')
 const { PositiveIntegerValidator, NotEmptyValidator } = require('./validators/validator')
-const { getUser } = require('./user')
+const { getUser } = require('../controller/user')
 
 const jwt = require('jsonwebtoken');
 const { TOKEN_SECRETKEY } = require('../config/secret')
@@ -46,32 +46,36 @@ router.post('/addPresent', async (ctx, next) => {
     const loginName = jwt.verify(sessionId, TOKEN_SECRETKEY).username
     const isAdminRes = await isAdmin(loginName)
     if (!isAdminRes) {
-        return new ErrorModel({
-            message: '暂无权限'
-        })
+        let ErrorModel = {
+            message: "权限不足",
+            status: 1,
+            httpCode: 500
+        }
+        handleRes(ctx, next, ErrorModel)
     }
-    const res = await addPresent(ctx.request.body.present)
+    const res = await addPresent(ctx.request.body)
     handleRes(ctx, next, res)
 })
 
-router.post('/getAllPresents', async (ctx, next) => {
+router.get('/getAllPresents', async (ctx, next) => {
 
-    const res = await getAllPresents(ctx.request.body.present)
+    const res = await getAllPresents(ctx.query)
     handleRes(ctx, next, res)
 })
 
-router.get('/:id/deletePresent', async (ctx, next) => {
+router.post('/deletePresent', async (ctx, next) => {
     const sessionId = ctx.cookies.get('sessionId')
     const loginName = jwt.verify(sessionId, TOKEN_SECRETKEY).username
     const isAdminRes = await isAdmin(loginName)
     if (!isAdminRes) {
-        return new ErrorModel({
-            message: '暂无权限'
-        })
+        let ErrorModel = {
+            message: "权限不足",
+            status: 1,
+            httpCode: 500
+        }
+        handleRes(ctx, next, ErrorModel)
     }
-    const v = await new PositiveIntegerValidator().validate(ctx)
-    const id = v.get('path.id')
-    const res = await deletePresent(id)
+    const res = await deletePresent(ctx.request.body)
     handleRes(ctx, next, res)
 })
 
@@ -80,9 +84,25 @@ router.post('/getPresents', async (ctx, next) => {
     handleRes(ctx, next, res)
 })
 
-router.post('/getAllPresentsRecords', async (ctx, next) => {
-    const res = await getAllPresentsRecords(ctx.request.body.presentsrecords)
+router.get('/getAllPresentsRecords', async (ctx, next) => {
+    const res = await getAllPresentsRecords(ctx.query)
     handleRes(ctx, next, res)
 
+})
+
+router.get('/getPresentsType', async (ctx, next) => {
+    const res = await getPresentTypes()
+    handleRes(ctx, next, res)
+})
+
+router.get('/getRecordPresentType', async (ctx, next) => {
+    const res = await getRecordPresentTypes()
+    handleRes(ctx, next, res)
+
+})
+
+router.post('/updatePresent', async (ctx, next) => {
+    const res = await updatePresents(ctx.request.body)
+    handleRes(ctx, next, res)
 })
 module.exports = router

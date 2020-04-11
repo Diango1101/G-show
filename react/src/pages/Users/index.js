@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Table, Card, Form, Input, Button, DatePicker, message, Icon, Row, Col, Divider, Modal, Popconfirm, notification } from 'antd'
+import { Table, Card, Form, Input, Button, DatePicker, message, Icon, Row, Col, Divider, Modal, Popconfirm, notification, Select } from 'antd'
 import { json } from '../../utils/ajax'
 import moment from 'moment'
 import InfoModal from './InfoModal'
@@ -7,7 +7,9 @@ import { connect } from 'react-redux'
 import { logout } from '../../utils/session'
 import { withRouter } from 'react-router-dom'
 import CreateUserModal from './CreateUserModal'
-
+import LoadableComponent from '@/utils/LoadableComponent'
+const CreateSHAnchor = LoadableComponent(import('./CreateSHAnchor'))
+const { Option } = Select;
 const store = connect(
     (state) => ({ user: state.user })
 )
@@ -27,7 +29,10 @@ class Users extends Component {
         isShowInfoModal: false,
         userInfo: {},        //当前行的user信息
         selectedRowKeys: [],   //选择中的行keys
-        isShowCreateModal: false
+        isShowCreateModal: false,
+        isShowSHModal: false,
+        SHUserId: '',
+        TobeAnchor: ''
 
     }
     componentDidMount() {
@@ -38,6 +43,15 @@ class Users extends Component {
         if (this.props.user !== prevProps.user) {
             this.getUsers(this.state.pagination.current)
         }
+    }
+    /**
+    * 获得审核信息
+    */
+    getToBeAnchor = async (userid) => {
+        const res = await json.get(`/user/${userid}/getToBeAnchor`)
+        this.setState({
+            TobeAnchor: res.data || [],
+        })
     }
     /**
      * 虽然后台可以一次把所有数据返回给我，但是为了学习,前后台还是做了一个分页
@@ -52,7 +66,8 @@ class Users extends Component {
             current: page - 1,
             username: fields.username || '',   //koa会把参数转换为字符串，undefined也会
             startTime: fields.startTime ? fields.startTime.valueOf() : '',
-            endTime: fields.endTime ? fields.endTime.valueOf() : ''
+            endTime: fields.endTime ? fields.endTime.valueOf() : '',
+            isToBeAnchor: fields.isToBeAnchor || null
         })
         if (res.status !== 0) {
             this.setState({
@@ -179,9 +194,16 @@ class Users extends Component {
             isShowCreateModal: visible
         })
     }
+    toggleShowSHModal = (visible, userid) => {
+        this.getToBeAnchor(userid)
+        this.setState({
+            isShowSHModal: visible,
+        })
+    }
     render() {
+        const RealUser = this.props.user
         const { getFieldDecorator } = this.props.form
-        const { users, usersLoading, pagination, userInfo, isShowInfoModal, selectedRowKeys, isShowCreateModal } = this.state
+        const { users, TobeAnchor, usersLoading, pagination, userInfo, isShowInfoModal, selectedRowKeys, isShowCreateModal, isShowSHModal } = this.state
         const columns = [
             {
                 title: '序号',
@@ -240,19 +262,31 @@ class Users extends Component {
                 title: '身份',
                 dataIndex: 'isAdmin',
                 align: 'center',
-                render: (text) => text ? '管理员' : '游客',
-                filterMultiple: false,
-                filters: [
-                    {
-                        text: '游客',
-                        value: 0,
-                    },
-                    {
-                        text: '管理员',
-                        value: 1,
-                    },
-                ],
-                onFilter: (text, record) => record.isAdmin === text,
+                render: (text, record) => (
+                    <div style={{ textAlign: 'center' }}>
+                        {
+                            record.isAdmin !== 1 || '管理员 '
+                        }
+                        {
+                            record.isAnchor !== 1 || '主播 '
+                        }
+                        {
+                            (record.isAnchor === 1 || record.isAdmin === 1) || '游客 '
+                        }
+                    </div>
+                )
+                // filterMultiple: false,
+                // filters: [
+                //     {
+                //         text: '游客',
+                //         value: 0,
+                //     },
+                //     {
+                //         text: '管理员',
+                //         value: 1,
+                //     },
+                // ],
+                // onFilter: (text, record) => record.isAdmin === text,
             },
             {
                 title: '操作',
@@ -262,10 +296,14 @@ class Users extends Component {
                     <div style={{ textAlign: 'left' }}>
                         <span className='my-a' onClick={() => this.showInfoModal(record)}><Icon type="eye" /> 查看</span>
                         {
-                            this.props.user.username === record.username &&
+                            RealUser.username === record.username &&
                             <Popconfirm title='您确定删除当前用户吗？' onConfirm={() => this.singleDelete(record)}>
                                 <span className='my-a'><Divider type='vertical' /><Icon type='delete' /> 删除</span>
                             </Popconfirm>
+                        }
+                        {
+                            (record.isToBeAnchor === 1 && RealUser.isAdmin === 1) &&
+                            (<span className='my-a' onClick={() => this.toggleShowSHModal(true, record.id)}><Divider type='vertical' /><Icon type='check-circle' /> 审核</span>)
                         }
                     </div>
                 )
@@ -284,7 +322,7 @@ class Users extends Component {
                 <Card bordered={false}>
                     <Form layout='inline' style={{ marginBottom: 16 }}>
                         <Row>
-                            <Col span={6}>
+                            <Col span={5}>
                                 <Form.Item label="用户名">
                                     {getFieldDecorator('username')(
                                         <Input
@@ -295,17 +333,41 @@ class Users extends Component {
                                     )}
                                 </Form.Item>
                             </Col>
-                            <Col span={7}>
+                            <Col span={5}>
                                 <Form.Item label="注册开始时间">
                                     {getFieldDecorator('startTime')(
                                         <DatePicker style={{ width: 200 }} showTime />
                                     )}
                                 </Form.Item>
                             </Col>
-                            <Col span={7}>
+                            <Col span={5}>
                                 <Form.Item label="注册截止时间">
                                     {getFieldDecorator('endTime')(
                                         <DatePicker style={{ width: 200 }} showTime />
+                                    )}
+                                </Form.Item>
+                            </Col>
+                            <Col span={5}>
+                                <Form.Item label="是否待审核主播">
+                                    {getFieldDecorator('isToBeAnchor', {
+
+                                    })(
+                                        <Select
+                                            showSearch
+                                            style={{ width: 150 }}
+                                            placeholder="请选择"
+                                        //   optionFilterProp="children"
+                                        //   filterOption={(input, option) =>
+                                        //     option.props.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                        //   }
+                                        >
+                                            <Option key={1} value={'1'}>
+                                                待审核
+                                            </Option>
+                                            <Option key={0} value={'0'}>
+                                                已审核
+                                            </Option>
+                                        </Select>
                                     )}
                                 </Form.Item>
                             </Col>
@@ -336,6 +398,7 @@ class Users extends Component {
                 </Card>
                 <InfoModal visible={isShowInfoModal} userInfo={userInfo} onCancel={this.closeInfoModal} />
                 <CreateUserModal visible={isShowCreateModal} toggleVisible={this.toggleShowCreateModal} onRegister={this.getUsers} />
+                <CreateSHAnchor visible={isShowSHModal} toggleVisible={this.toggleShowSHModal} getUsers={this.getUsers} TobeAnchor={TobeAnchor} />
             </div>
         );
     }

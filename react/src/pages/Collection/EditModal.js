@@ -10,26 +10,48 @@ const store = connect(
 )
 
 @store @Form.create()
-class CreateModal extends Component {
+class EditModal extends Component {
     state = {
-        uploading: false
+        uploading: false,
+        room: []
+    }
+    async componentDidMount() {
+        await this.getCollection()
+        console.log('待编辑直播间', this.state.room)
+    }
+    getCollection = async () => {
+        let username = this.props.username
+        const res = await json.get(`/liverooms/${username}/OnesLiveRoom`)
+        this.setState({
+            room: res.data || [],
+        })
+
     }
     onCancel = () => {
-        this.props.form.resetFields()
+        // this.props.form.resetFields()
         this.props.toggleVisible(false)
     }
     onOk = () => {
         this.props.form.validateFieldsAndScroll((errors, values) => {
             if (!errors) {
-                this.onCreate(values)
+                this.onEdit(values)
             }
         })
     }
-    onCreate = async (values) => {
-        const res = await json.post('/liverooms/create', values)
+    onEdit = async (values) => {
+        const value = {
+            room: {
+                ...values,
+                author: this.state.room.author
+            }
+
+        }
+        console.log('ediit', value)
+        const res = await json.post('/liverooms/updateRoom', value)
         if (res.status === 0) {
-            this.props.onCreated()  //更新外面的数据
+            this.props.onEdited()  //更新外面的数据
             this.onCancel()
+
         }
     }
     /**
@@ -49,6 +71,8 @@ class CreateModal extends Component {
             wrapperCol: { span: 14 },
         }
         const { getFieldDecorator, getFieldValue } = this.props.form
+        const { title, description } = this.state.room
+        const Initalavatar = this.state.room.roomavatar
 
         const roomavatar = getFieldValue('roomavatar')
         const uploadProps = {
@@ -82,7 +106,7 @@ class CreateModal extends Component {
         return (
             <Modal
                 visible={this.props.visible}
-                title='创建直播间'
+                title='修改个人直播间信息'
                 centered
                 onCancel={this.onCancel}
                 okButtonProps={{ disabled: !this.props.user.isAdmin && !this.props.isAnchor }}
@@ -91,6 +115,7 @@ class CreateModal extends Component {
                 <Form {...formItemLayout}>
                     <Form.Item label={'直播间名称'}>
                         {getFieldDecorator('title', {
+                            initialValue: title,
                             rules: [
                                 { required: true, message: '请输入直播间名称' },
                             ]
@@ -100,6 +125,7 @@ class CreateModal extends Component {
                     </Form.Item>
                     <Form.Item label={'直播间描述'}>
                         {getFieldDecorator('description', {
+                            initialValue: description,
                             rules: [
                                 { required: true, message: '直播间描述' },
                             ]
@@ -109,6 +135,7 @@ class CreateModal extends Component {
                     </Form.Item>
                     <Form.Item label={'直播间封面'} {...formItemLayout}>
                         {getFieldDecorator('roomavatar', {
+                            initialValue: Initalavatar,
                             rules: [{ required: true, message: '请上传直播间封面' }],
                             getValueFromEvent: this._normFile,     //将上传的结果作为表单项的值（用normalize报错了，所以用的这个属性）
                         })(
@@ -143,4 +170,4 @@ const styles = {
     },
 }
 
-export default CreateModal;
+export default EditModal;

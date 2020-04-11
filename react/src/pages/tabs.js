@@ -9,8 +9,8 @@ const Collection = LoadableComponent(import('./Collection/index'), true);
 const MessageBoard = LoadableComponent(import('./MessageBoard/index'), true);
 const Chat = LoadableComponent(import('./Chat/index'), true);
 const About = LoadableComponent(import('./About/index'), true);
-
-
+const Presents = LoadableComponent(import('./Presents/index'), true);
+const PresentRecords = LoadableComponent(import('./PresentRecords/index'))
 const menu = [
     {
         name: 'antd',
@@ -40,9 +40,19 @@ const menu = [
         key: 'Users'
     },
     {
-        name: '作品集',
+        name: '直播间',
         icon: 'bulb',
         key: 'Collection'
+    },
+    {
+        name: '礼物兑换',
+        icon: 'strikethrough',
+        key: 'Presents'
+    },
+    {
+        name: '兑换记录',
+        icon: 'zoom-in',
+        key: 'PresentRecords'
     },
     {
         name: '留言板',
@@ -67,6 +77,8 @@ const tabs = {
     FeedbackDemo: <FeedbackDemo />,
     Users: <Users />,
     Collection: <Collection />,
+    Presents: <Presents />,
+    PresentRecords: <PresentRecords />,
     MessageBoard: <MessageBoard />,
     Chat: <Chat />,
     About: <About />,

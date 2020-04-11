@@ -181,6 +181,22 @@ CREATE TABLE `usergames` (
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
+-- Table structure for tobeanchors
+-- ----------------------------
+DROP TABLE IF EXISTS `tobeanchors`;
+CREATE TABLE `tobeanchors` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'tobeid',
+  `userId` int(11) DEFAULT NULL COMMENT '申请用户Id',
+ `title` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '直播间标题',
+  `description` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '直播间描述',
+  `createTime` bigint(20) DEFAULT NULL COMMENT '创建时间',
+  `author` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '主播名',
+   `roomavatar` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '房间封面',
+   `status` int(2) DEFAULT 0 COMMENT '状态 1申请通过 0申请中  默认0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ----------------------------
 -- Table structure for ports
 -- ----------------------------
 DROP TABLE IF EXISTS `ports`;
