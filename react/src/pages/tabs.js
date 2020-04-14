@@ -5,12 +5,14 @@ const ButtonDemo = LoadableComponent(import('./ButtonDemo/index'), true);
 const IconDemo = LoadableComponent(import('./IconDemo/index'), true);
 const FeedbackDemo = LoadableComponent(import('./FeedbackDemo/index'), true);
 const Users = LoadableComponent(import('./Users/index'), true);
-const Collection = LoadableComponent(import('./Collection/index'), true);
+const Collection = LoadableComponent(import('./LiveRooms/index'), true);
 const MessageBoard = LoadableComponent(import('./MessageBoard/index'), true);
 const Chat = LoadableComponent(import('./Chat/index'), true);
 const About = LoadableComponent(import('./About/index'), true);
 const Presents = LoadableComponent(import('./Presents/index'), true);
 const PresentRecords = LoadableComponent(import('./PresentRecords/index'))
+const Games = LoadableComponent(import('./Games/index'))
+const GameRecords = LoadableComponent(import('./GameRecords/index'))
 const menu = [
     {
         name: 'antd',
@@ -55,6 +57,16 @@ const menu = [
         key: 'PresentRecords'
     },
     {
+        name: '游戏中心',
+        icon: 'dollar',
+        key: 'Games'
+    },
+    {
+        name: '游戏记录',
+        icon: 'ordered-list',
+        key: 'GameRecords'
+    },
+    {
         name: '留言板',
         icon: 'message',
         key: 'MessageBoard'
@@ -79,6 +91,8 @@ const tabs = {
     Collection: <Collection />,
     Presents: <Presents />,
     PresentRecords: <PresentRecords />,
+    Games: <Games />,
+    GameRecords: <GameRecords />,
     MessageBoard: <MessageBoard />,
     Chat: <Chat />,
     About: <About />,

@@ -9,7 +9,18 @@ const { SuccessModel, ErrorModel } = require('../model/resModel')
  * 获得所有参赛队伍
  */
 const getAllTeams = async function () {
-    const sql = `select Team from teams order by RK`
+    const sql = `select distinct Team from teams order by RK`
+    const res = await exec(sql)
+    return new SuccessModel({
+        data: res
+        // data: res
+    })
+}
+/**
+ * 获得所有比赛日期
+ */
+const getAllGamedate = async function () {
+    const sql = `select distinct gamedate from nba20forecasts`
     const res = await exec(sql)
     return new SuccessModel({
         data: res
@@ -23,6 +34,18 @@ const getAllTeams = async function () {
 const getGameTeamsByDate = async function (gamedate) {
     const sql = `select win,lose from nba20forecasts where gamedate='${gamedate}'`
     const res = await exec(sql)
+    return new SuccessModel({
+        data: res[0]
+        // data: res
+    })
+}
+
+/**
+ * 根据比赛日期获得队伍  内部使用
+ */
+const getGameTeamsByDateIn = async function (gamedate) {
+    const sql = `select win,lose from nba20forecasts where gamedate='${gamedate}'`
+    const res = await exec(sql)
     return res
 }
 
@@ -34,26 +57,25 @@ const getOdds = function (platwin = true, probability) {
     var odds
     if (platwin) {
         if (0.5 <= pro <= 0.6) {
-            odds = 0.9 + 0.38 * pro
+            odds = 0.9 + 0.58 * pro
         } if (0.6 < pro <= 0.7) {
-            odds = 0.88 + 0.33 * pro
+            odds = 0.8 + 0.78 * pro
         } if (0.7 < pro < 0.9) {
-            odds = 0.8 + 0.65 * pro
+            odds = 0.7 + 0.95 * pro
         } else {
-            odds = 0.8 + 0.9 * pro
+            odds = 0.7 + 0.98 * pro
         }
     } else {
-        odds = 5 + pro * 5
+        odds = 1 + pro * 3
     }
     return odds
 
 }
-
 /**
  *   创建游戏  前端加条件仅超管和房管可添加
  */
 const addGame = async function (game) {
-    const teams = await getGameTeamsByDate(game.gamedate)
+    const teams = await getGameTeamsByDateIn(game.gamedate)
     var win, probability
     if (teams.length == 1) {
         const sql1 = `select win,probability from nba20forecasts where gamedate='${game.gamedate}'`
@@ -92,70 +114,110 @@ const addGame = async function (game) {
     }
 }
 /**
- *   获取所有游戏信息
+ *   获取所有游戏信息  可分页
  */
-const getAllGames = async function () {
-    const sql = `select * from games order by status desc,gamedate desc,createTime desc`
+const getAllGames = async function (games) {
+    const { current = 0, pageSize = 10, team1, team2, gamedate1, gamedate2, status = 1 } = games
+    let sql = `select SQL_CALC_FOUND_ROWS * from games where  gamedate between ${gamedate1} and ${gamedate2} `
+    if (team1) {
+        sql += ` and team1 like '%${team1}%' `
+    }
+    if (team2) {
+        sql += ` and team2 like '%${team2}%' `
+    }
+    if (status) {
+        sql += ` and status = '${status}' `
+    }
+    sql += ` order by status desc,gamedate desc,createTime desc limit ${current * pageSize},${pageSize}`
+    // const sql = `select * from games order by status desc,gamedate desc,createTime desc`
+    console.log(sql)
     const res = await exec(sql)
+    const sql2 = 'select found_rows() as total'
+    const res2 = await exec(sql2)
     return new SuccessModel({
-        data: res,
-        message: '获取所有列表成功'
+        data: {
+            list: res,
+            current: parseInt(current),
+            pageSize: parseInt(pageSize),
+            total: res2[0].total
+        }
     })
 }
 
 /**
  *   结束某场游戏  前端加条件仅超管和房管可添加
  */
-const stopGame = async function (gameid) {
-    const sql = `update games set status = 0 where id=${gameid}`
-    const res = await exec(sql)
-    if (res.affectedRows) {
-        return new SuccessModel({
-            // data: { gameId: res.insertId },
-            data: res,
-            message: '设置成功'
-        })
+const stopGame = async function (param) {
+    const result = await getIsSet(param)
+    if (result) {
+        const ids = param.ids
+        if (!Array.isArray(ids)) {
+            return new ErrorModel({
+                message: '参数异常',
+                httpCode: 400
+            })
+        }
+        const sql = `update games set status = 0 where id in (${ids.join(',')})`
+        const res = await exec(sql)
+        if (res.affectedRows) {
+            return new SuccessModel({
+                // data: { gameId: res.insertId },
+                data: res,
+                message: '设置成功'
+            })
+        } else {
+            return new ErrorModel({
+                message: '创建游戏失败',
+                httpCode: 500
+            })
+        }
     } else {
         return new ErrorModel({
-            message: '创建游戏失败',
+            message: '请确保要结束的每条游戏都已结算',
             httpCode: 500
         })
     }
 }
 /**
- *   设置某场游戏最终结果  前端加条件仅超管和房管可添加   同时调用内部方法getOdds  设置赔率
+ *   设置某场游戏最终结果  前端加条件仅超管和房管可添加   同时调用内部方法getOdds 设置赔率 SettlementRecords自动结算
  */
 const setGameResult = async function (game) {
     const flag = (game.RealWinner == game.preWinner) ? true : false
     const odds = getOdds(flag, game.probability)
     game.odds = odds
-    const sql = `update games set RealWinner ='${game.RealWinner}',status= 0,odds=${odds}  where id='${game.gameid}'`
+    const sql = `update games set RealWinner ='${game.RealWinner}',isSet = 1,odds=${odds}  where id='${game.gameid}'`
     const res = await exec(sql)
     if (res.affectedRows) {
         SettlementRecords(game)
         return new SuccessModel({
             data: res,
-            message: '设置成功'
+            message: '结算成功'
         })
     } else {
         return new ErrorModel({
-            message: '创建游戏失败',
+            message: '结算失败',
             httpCode: 500
         })
     }
 }
 
 /**
-*   setGameResult设置某场游戏最终结果后触发该方法自动结算   修改个人积分 需传入原积分
+*   setGameResult设置某场游戏最终结果后触发该方法自动结算   修改个人积分 
 */
 const SettlementRecords = async function (game) {
-
-    const sql1 = `update usergames set receiveValue=(${game.odds}*userValue) where gameId=${game.gameid}`
+    const sql = `update usergames set RealWinner='${game.RealWinner}' where gameId=${game.gameid}`
+    const res = await exec(sql)
+    // 加触发器  更新realwinner时触发  设置 personalOdds属性  若realwinner和prewinner一致则personalOdds属性为0.2 不然为-0.2 
+    const sql1 = `update usergames set receiveValue=((${game.odds}+personalOdds)*userValue) where gameId=${game.gameid}`
     const res1 = await exec(sql1)
+    console.log('updatesql1', sql1)
     if (res1.affectedRows) {
         const sql2 = `update usergames a JOIN users b ON a.userId=b.id set b.records=(b.records+a.receiveValue) where a.gameId=${game.gameid}`
+        console.log('updatesql2', sql2)
         const res2 = await exec(sql2)
         if (res2.affectedRows) {
+            const sql3 = `update games set status= 0  where id='${game.gameid}'`
+            await exec(sql3)
             return new SuccessModel({
                 data: res2,
                 message: '结算成功'
@@ -178,16 +240,18 @@ const SettlementRecords = async function (game) {
 /**
 *   参加游戏并下注  数据表usergames
 */
-const UserBet = async function (userid, gameid, Values) {
+const UserBet = async function (userid, gameid, Values, team1, team2, preWinner) {
     const remainrecors = await getUserRemainRecords(userid)
     if (remainrecors > 0) {
         if (remainrecors > Values) {
-            const sql = `insert into usergames(userId,gameId,userValue,createTime) values
-          ('${userid}','${gameid}','${Values}','${Date.now()}')`
+            const sql = `insert into usergames(userId,gameId,userValue,preWinner,createTime,team1,team2) values
+          ('${userid}','${gameid}','${Values}','${preWinner}','${Date.now()}','${team1}','${team2}')`
             const res = await exec(sql)
             const sql2 = `update users set records=(records-${Values}) where id=${userid}`
             const res2 = await exec(sql2)
-            if (res2.affectedRows) {
+            const sql3 = `update games set userCounts=(userCounts+1) where id='${gameid}'`
+            const res3 = await exec(sql3)
+            if (res3.affectedRows) {
                 return new SuccessModel({
                     data: res2,
                     message: '下注成功'
@@ -224,15 +288,81 @@ const getUserRemainRecords = async function (userid) {
 }
 
 /**
-*   获得所有用户参赛情况
+*   获取游戏记录 用户列表
 */
-const getAllUserGames = async function () {
-    const sql = `select * from usergames order by createTime desc`
+const getInUsers = async function () {
+    const sql = `select distinct a.userId,b.username from usergames a left join users b on a.userId=b.id`
     const res = await exec(sql)
     return new SuccessModel({
-        data: res,
-        message: '查询成功'
+        data: res
     })
+}
+/**
+*   获取游戏记录  中 个人战况汇总
+*/
+const getTotalRecords = async function (userId) {
+    const { userid } = userId
+    const sql1 = `select sum(userValue) as totalCost,sum(receiveValue) as totalGet,count(personalOdds) as winCounts from usergames where userId='${userid}' and personalOdds>0`
+    const res1 = await exec(sql1)
+    console.log(sql1)
+    const sql2 = `select count(personalOdds) as loseCounts from usergames where userId='${userid}' and personalOdds<0`
+    const res2 = await exec(sql2)
+    console.log(sql2)
+    return new SuccessModel({
+        data: {
+            totalCost: res1[0].totalCost,
+            totalGet: res1[0].totalGet,
+            winCounts: res1[0].winCounts,
+            loseCounts: res2[0].loseCounts
+        }
+    })
+}
+
+
+/**
+*   获得所有用户参赛情况  可分页   分管理员取所有和 其他用户只能看自己的
+*/
+const getAllUserGames = async function (usergames) {
+    const { current = 0, pageSize = 10, userId, team1, team2, userValue, receiveValue, startTime, endTime, preResult } = usergames
+    let sql = `select SQL_CALC_FOUND_ROWS a.id,a.userId,b.username,a.gameId,a.userValue,a.receiveValue,a.createTime,a.team1,a.team2,a.RealWinner,a.preWinner,a.personalOdds 
+    from usergames a left join users b on  a.userId =b.id  where createTime between ${startTime || 0} and ${endTime || Date.now()}  `
+    if (userId) {
+        sql += `and userId='${userId}' `
+    }
+    if (team1) {
+        sql += `and team1 like '%${team1}%' `
+    }
+    if (team2) {
+        sql += `and team2 like '%${team2}%' `
+    }
+    if (receiveValue) {
+        sql += `and receiveValue between 0 and '${receiveValue}' `
+    }
+    if (userValue) {
+        sql += `and userValue between 0 and '${userValue}' `
+    }
+    if (preResult) {
+        if (preResult == '1') {
+            sql += ` and personalOdds >0 `
+        } else {
+            sql += ` and personalOdds <0  `
+        }
+    }
+    sql += `order by createTime desc,receiveValue desc,b.username limit ${current * pageSize},${pageSize}`
+    // const sql = `select * from games order by status desc,gamedate desc,createTime desc`
+    console.log(sql)
+    const res = await exec(sql)
+    const sql2 = 'select found_rows() as total'
+    const res2 = await exec(sql2)
+    return new SuccessModel({
+        data: {
+            list: res,
+            current: parseInt(current),
+            pageSize: parseInt(pageSize),
+            total: res2[0].total
+        }
+    })
+
 }
 
 /**
@@ -247,14 +377,41 @@ const getTeams = async function (gameid) {
         // data: res
     })
 }
+
+
+/**
+*   判断游戏是否已结算  可单条或多条
+*/
+const getIsSet = async function (param) {
+    const ids = param.ids
+    if (!Array.isArray(ids)) {
+        return new ErrorModel({
+            message: '参数异常',
+            httpCode: 400
+        })
+    }
+    const sql = `select isSet from games where id in (${ids.join(',')})`
+    const res = await exec(sql)
+    let isSets = res
+    for (let i = 0; i < isSets.length; i++) {
+        if (isSets[i].isSet == 0) {
+            return false
+        }
+    }
+    return true
+}
+
 module.exports = {
     getTeams,
     getAllTeams,
+    getAllGamedate,
     getAllUserGames,
     addGame,
     getGameTeamsByDate,
     getAllGames,
     stopGame,
     setGameResult,
-    UserBet
+    UserBet,
+    getInUsers,
+    getTotalRecords
 }

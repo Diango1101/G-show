@@ -142,8 +142,11 @@ DROP TABLE IF EXISTS `presentsRecords`;
 CREATE TABLE `presentsRecords` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'id',
   `presentId` int(11) DEFAULT NULL COMMENT '礼品id',
+   `presentType` varchar(32) DEFAULT NULL COMMENT '礼品种类',
+    `presentName` varchar(32) DEFAULT NULL COMMENT '礼品名字',
   `userId` int(11) DEFAULT NULL COMMENT '兑换用户Id',
   `counts` int(11) DEFAULT NULL COMMENT '兑换数量',
+  `realCost` int(11) DEFAULT NULL COMMENT '实际消耗',
   `createTime` bigint(20) DEFAULT NULL COMMENT '兑换时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -163,7 +166,9 @@ CREATE TABLE `games` (
   `gamedate` bigint(20) DEFAULT NULL COMMENT '比赛时间',
   `odds` DECIMAL(16,15) DEFAULT NULL COMMENT '赔率',
    `createTime` bigint(20) DEFAULT NULL COMMENT '兑换时间',
+    `isSet` int(2) DEFAULT 0 COMMENT '是否已结算 默认0 未结算 必须结算了才能结束游戏',
    `status` int(2) DEFAULT 1 COMMENT '状态 默认1开启 0关闭',
+   `userCounts` int(32) DEFAULT 0 COMMENT '参赛人数',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 -- ----------------------------
@@ -174,6 +179,11 @@ CREATE TABLE `usergames` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'gameid',
   `userId` int(11) DEFAULT NULL COMMENT '参加游戏用户Id',
   `gameId` int(11) DEFAULT NULL COMMENT '所参加游戏Id',
+   `team1` varchar(32) DEFAULT NULL COMMENT 'team1',
+  `team2`  varchar(32) DEFAULT NULL COMMENT 'team2',
+   `RealWinner` varchar(32) DEFAULT NULL COMMENT 'team1',
+   `preWinner` varchar(32) DEFAULT NULL COMMENT 'team1',
+   `personalOdds` DECIMAL(3,2) DEFAULT 0 COMMENT '个人赔率',
   `userValue` int(11) DEFAULT NULL COMMENT '下注积分',
   `receiveValue` int(11) DEFAULT NULL COMMENT '获得积分',
     `createTime` bigint(20) DEFAULT NULL COMMENT '下注时间',
@@ -207,3 +217,23 @@ CREATE TABLE `ports` (
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+/* 新建触发器  游戏结算时自动核算个人预测是否正确 */
+drop trigger if exists SettlePersonalOdds
+
+delimiter ;;
+create trigger SettlePersonalOdds before update on  usergames
+for each row
+begin
+	if(new.preWinner = old.preWinner) then
+		if (new.RealWinner=new.preWinner)then
+			set new.personalOdds=0.2;
+		else
+			set new.personalOdds=-0.2;
+        end if;
+	end if;
+end;;
+delimiter ;
+
+
+

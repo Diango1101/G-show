@@ -35,47 +35,47 @@ class InfoModal extends Component {
                     <Row gutter={12}>
                         <Col span={12}>
                             <Form.Item label="用户名">
-                                {getFieldDecorator('username', {})(<Input />)}
+                                {getFieldDecorator('username', {})(<Input disabled={true} />)}
                             </Form.Item>
                         </Col>
                         <Col span={12}>
                             <Form.Item label="性别">
-                                {getFieldDecorator('gender', {})(<Input />)}
+                                {getFieldDecorator('gender', {})(<Input disabled={true} />)}
                             </Form.Item>
                         </Col>
                         <Col span={12}>
                             <Form.Item label="注册IP地址">
-                                {getFieldDecorator('rIp', {})(<Input />)}
+                                {getFieldDecorator('rIp', {})(<Input disabled={true} />)}
                             </Form.Item>
                         </Col>
                         <Col span={12}>
                             <Form.Item label="注册时间">
-                                {getFieldDecorator('rTime', {})(<Input />)}
+                                {getFieldDecorator('rTime', {})(<Input disabled={true} />)}
                             </Form.Item>
                         </Col>
                         <Col span={12}>
                             <Form.Item label="注册国家">
-                                {getFieldDecorator('rNation', {})(<Input />)}
+                                {getFieldDecorator('rNation', {})(<Input disabled={true} />)}
                             </Form.Item>
                         </Col>
                         <Col span={12}>
                             <Form.Item label="注册省份">
-                                {getFieldDecorator('rProvince', {})(<Input />)}
+                                {getFieldDecorator('rProvince', {})(<Input disabled={true} />)}
                             </Form.Item>
                         </Col>
                         <Col span={12}>
                             <Form.Item label="注册城市">
-                                {getFieldDecorator('rCity', {})(<Input />)}
+                                {getFieldDecorator('rCity', {})(<Input disabled={true} />)}
                             </Form.Item>
                         </Col>
                         <Col span={12}>
                             <Form.Item label="上一次登陆地址">
-                                {getFieldDecorator('lastLoginAddress', {})(<Input />)}
+                                {getFieldDecorator('lastLoginAddress', {})(<Input disabled={true} />)}
                             </Form.Item>
                         </Col>
                         <Col span={12}>
                             <Form.Item label="上一次登陆时间">
-                                {getFieldDecorator('lastLoginTime', {})(<Input />)}
+                                {getFieldDecorator('lastLoginTime', {})(<Input disabled={true} />)}
                             </Form.Item>
                         </Col>
                     </Row>

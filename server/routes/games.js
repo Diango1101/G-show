@@ -1,5 +1,5 @@
 const router = require('koa-router')()
-const { getTeams, getAllTeams, getAllUserGames, getGameTeamsByDate, addGame, getAllGames, stopGame, setGameResult, UserBet } = require('../controller/games')
+const { getTeams, getAllTeams, getAllUserGames, getGameTeamsByDate, addGame, getAllGames, stopGame, setGameResult, UserBet, getAllGamedate, getInUsers, getTotalRecords } = require('../controller/games')
 const { PositiveIntegerValidator, NotEmptyValidator } = require('./validators/validator')
 router.prefix('/games')
 
@@ -23,6 +23,11 @@ router.get('/getAllTeams', async function (ctx, next) {
     handleRes(ctx, next, res)
 })
 
+router.get('/getAllGamedate', async function (ctx, next) {
+    const res = await getAllGamedate()
+    handleRes(ctx, next, res)
+})
+
 router.get('/getGameTeamsByDate', async function (ctx, next) {
     const v = await new NotEmptyValidator().validate(ctx, {
         title: 'gamedate'
@@ -33,27 +38,24 @@ router.get('/getGameTeamsByDate', async function (ctx, next) {
 })
 
 router.post('/addGame', async function (ctx, next) {
-    const res = await addGame(ctx.request.body.game)
+    const res = await addGame(ctx.request.body)
     handleRes(ctx, next, res)
 })
 
 router.get('/getAllGames', async function (ctx, next) {
-    const res = await getAllGames()
+    const res = await getAllGames(ctx.query)
     handleRes(ctx, next, res)
 })
 
 router.post('/stopGame', async function (ctx, next) {
-    const v = await new NotEmptyValidator().validate(ctx, {
-        title: 'gameid'
-    })
-    const gameid = v.get('body.gameid')
-    const res = await stopGame(gameid)
+
+    const res = await stopGame(ctx.request.body)
     handleRes(ctx, next, res)
 })
 
 router.post('/userBet', async function (ctx, next) {
-    const { userid, gameid, Values } = ctx.request.body.bet
-    const res = await UserBet(userid, gameid, Values)
+    const { userid, gameid, Values, team1, team2, preWinner } = ctx.request.body
+    const res = await UserBet(userid, gameid, Values, team1, team2, preWinner)
     handleRes(ctx, next, res)
 })
 
@@ -63,7 +65,18 @@ router.post('/setGameResult', async function (ctx, next) {
 })
 
 router.get('/getAllUserGames', async function (ctx, next) {
-    const res = await getAllUserGames()
+    const res = await getAllUserGames(ctx.query)
+    handleRes(ctx, next, res)
+})
+
+router.get('/getInUsers', async function (ctx, next) {
+    const res = await getInUsers()
+    handleRes(ctx, next, res)
+})
+
+router.get('/getTotals', async function (ctx, next) {
+    console.log(ctx.query)
+    const res = await getTotalRecords(ctx.query)
     handleRes(ctx, next, res)
 })
 

@@ -289,6 +289,13 @@ class Users extends Component {
                 // onFilter: (text, record) => record.isAdmin === text,
             },
             {
+                title: '个人积分',
+                dataIndex: 'records',
+                align: 'center',
+                render: (text) => text && `${text}分`,
+                sorter: (a, b) => a.records - b.records
+            },
+            {
                 title: '操作',
                 key: 'active',
                 align: 'center',
