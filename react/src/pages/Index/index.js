@@ -3,7 +3,7 @@ import { Layout } from 'antd'
 import MySider from './MySider'
 import MyHeader from './MyHeader'
 import MyContent from './MyContent'
-import { getUser, initWebSocket } from '@/store/actions'
+import { getUser, initWebSocket, ReSetPane, ReSetActivePane } from '@/store/actions'
 import { connect, } from 'react-redux'
 import { bindActionCreators } from 'redux'
 
@@ -11,9 +11,8 @@ const { Header, Sider, Content } = Layout;
 
 const store = connect(
     (state) => ({ user: state.user, websocket: state.websocket }),
-    (dispatch) => bindActionCreators({ getUser, initWebSocket }, dispatch)
+    (dispatch) => bindActionCreators({ getUser, initWebSocket, ReSetPane, ReSetActivePane }, dispatch)
 )
-
 @store
 class Index extends React.Component {
     //因为这些状态在不同组件中使用了，所以这里使用了状态提升（这里也可以用状态管理,为了学习这里就使用状态提升）
@@ -41,6 +40,10 @@ class Index extends React.Component {
     _setState = (obj) => {
         this.setState(obj)
     }
+    _setPane = (pane, activepane) => {
+        if (pane != null) { this.props.ReSetPane(pane) }
+        this.props.ReSetActivePane(activepane)
+    }
     render() {
         const { collapsed, panes, activeMenu, theme } = this.state
         return (
@@ -48,9 +51,9 @@ class Index extends React.Component {
                 <Sider trigger={null} collapsible collapsed={collapsed} theme={theme}>
                     <MySider
                         theme={theme}
-                        panes={panes}
-                        activeMenu={activeMenu}
-                        onChangeState={this._setState} />
+                        // panes={panes}
+                        // activeMenu={activeMenu}
+                        onChangeState={this._setPane} />
                 </Sider>
                 <Layout>
                     <Header style={{ padding: 0 }}>
@@ -61,9 +64,9 @@ class Index extends React.Component {
                     </Header>
                     <Content>
                         <MyContent
-                            panes={panes}
-                            activeMenu={activeMenu}
-                            onChangeState={this._setState} />
+                            // panes={panes}
+                            // activeMenu={activeMenu}
+                            onChangeState={this._setPane} />
                     </Content>
                 </Layout>
             </Layout>

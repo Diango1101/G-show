@@ -3,7 +3,7 @@ import { Modal, Form, Upload, Icon, message, Input, Radio, DatePicker, Alert } f
 import { isAuthenticated, authenticateSuccess } from '../../utils/session'
 import moment from 'moment'
 import { json } from '../../utils/ajax'
-import { setUser, initWebSocket } from '../../store/actions'
+import { setUser, initWebSocket, initRoomWebSocket } from '../../store/actions'
 import { connect, } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import { createFormField } from '../../utils/util'
@@ -12,8 +12,8 @@ import { createFormField } from '../../utils/util'
 const RadioGroup = Radio.Group;
 
 const store = connect(
-    (state) => ({ user: state.user, websocket: state.websocket }),
-    (dispatch) => bindActionCreators({ setUser, initWebSocket }, dispatch)
+    (state) => ({ user: state.user, websocket: state.websocket, roomwebsocket: state.roomwebsocket, }),
+    (dispatch) => bindActionCreators({ setUser, initWebSocket, initRoomWebSocket }, dispatch)
 )
 const form = Form.create({
     /**
@@ -72,6 +72,16 @@ class EditInfoModal extends React.Component {
                 this.props.initWebSocket(res.data)
             } else {
                 this.props.websocket.send(JSON.stringify({
+                    id: res.data.id,
+                    username: res.data.username,
+                    avatar: res.data.avatar
+                }))
+            }
+            //修改roomwebsocket中信息
+            if (this.props.roomwebsocket.readyState !== 1) {
+                this.props.initRoomWebSocket(res.data)
+            } else {
+                this.props.roomwebsocket.send(JSON.stringify({
                     id: res.data.id,
                     username: res.data.username,
                     avatar: res.data.avatar

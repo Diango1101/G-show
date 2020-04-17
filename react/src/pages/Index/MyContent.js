@@ -1,7 +1,9 @@
 import React from "react";
 import { Tabs, Carousel, Layout, Icon } from "antd";
 import "./style.less";
-
+import { ReSetPane, ReSetActivePane, initRoomWebSocket } from '@/store/actions'
+import { connect, } from 'react-redux'
+import { bindActionCreators } from 'redux'
 const Footer = Layout.Footer;
 const TabPane = Tabs.TabPane;
 const imgs = [
@@ -9,15 +11,19 @@ const imgs = [
     `${process.env.REACT_APP_BASE_URL}/public/images/b2.jpg`,
     `${process.env.REACT_APP_BASE_URL}/public/images/b3.jpg`
 ];
-
+const store = connect(
+    (state) => ({ panes: state.panes, activepane: state.activepane, roomwebsocket: state.roomwebsocket, user: state.user }),
+    (dispatch) => bindActionCreators({ ReSetPane, ReSetActivePane }, dispatch)
+)
+@store
 class MyContent extends React.Component {
 	/**
 	 *  标签页的改变触发的函数
 	 */
     onChange = activeKey => {
-        this.props.onChangeState({
-            activeMenu: activeKey
-        });
+        this.props.onChangeState(
+            null, activeKey
+        );
     };
     onEdit = (targetKey, action) => {
         if (action === "remove") {
@@ -28,23 +34,28 @@ class MyContent extends React.Component {
 	 * 关闭标签页
 	 */
     remove = targetKey => {
-        let activeMenu = this.props.activeMenu;
+        let activeMenu = this.props.activepane;
+        console.log('activenow', activeMenu)
         let panes = this.props.panes.slice();
         let preIndex = panes.findIndex(item => item.key === targetKey) - 1;
+        console.log('targetKey', targetKey)
         preIndex = Math.max(preIndex, 0);
-
         panes = panes.filter(item => item.key !== targetKey);
-
         if (targetKey === activeMenu) {
             activeMenu = panes[preIndex] ? panes[preIndex].key : "";
         }
-        this.props.onChangeState({
-            activeMenu,
-            panes
-        });
+        this.props.onChangeState(
+            panes,
+            activeMenu
+        );
+        //要关闭标签页则断开 则必须每个直播间分配一个不同的websocket  我这里要关闭同时关闭websocket就全部关闭了 故不实现关闭标签页则下线功能
+        if (this.props.roomwebsocket) {
+            this.props.roomwebsocket.close()
+
+        }
     };
     render() {
-        const { panes, activeMenu } = this.props;
+        let { panes, activepane } = this.props;
         return (
             <div className="content-container">
                 {" "}
@@ -59,7 +70,7 @@ class MyContent extends React.Component {
                         }}
                         onEdit={this.onEdit}
                         onChange={this.onChange}
-                        activeKey={activeMenu}
+                        activeKey={activepane}
                         type="editable-card"
                         hideAdd
                     >
@@ -69,7 +80,7 @@ class MyContent extends React.Component {
                                 <Footer
                                     style={{
                                         textAlign: "center",
-                                        background: "#fff"
+                                        // background: "#fff"
                                     }}
                                 >
                                     G - Show Live© {new Date().getFullYear()}{' '}

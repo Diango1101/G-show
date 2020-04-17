@@ -1,5 +1,5 @@
 const router = require('koa-router')()
-const { register, checkName, getIpInfo, login, getUsers, getUser, updateUser, deleteUsers, getAllUsers, beAnchor, gettobeAnchor, AuthAnchor, notAuth } = require('../controller/user')
+const { register, checkName, getIpInfo, login, getUsers, getUser, updateUser, deleteUsers, getAllUsers, beAnchor, gettobeAnchor, AuthAnchor, notAuth, isOnLiveAnchor } = require('../controller/user')
 const { RegisterValidator, NotEmptyValidator } = require('./validators/validator')
 const jwt = require('jsonwebtoken');
 const { TOKEN_SECRETKEY } = require('../config/secret')
@@ -133,6 +133,13 @@ router.post('/NotAuthAnchor', async function (ctx, next) {
     }
     const userid = ctx.request.body.userid
     const res = await notAuth(userid)
+    handleRes(ctx, next, res)
+
+})
+
+router.post('/isOnliveAnchor', async function (ctx, next) {
+    const { username, roomid } = ctx.request.body
+    const res = await isOnLiveAnchor(username, roomid)
     handleRes(ctx, next, res)
 
 })

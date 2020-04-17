@@ -289,7 +289,7 @@ const deleteUsers = async (param) => {
  * 获取所有用户
  */
 const getAllUsers = async () => {
-    const sql = `select id,username,avatar,isAdmin from users order by registrationTime desc`
+    const sql = `select id,username,avatar,isAdmin,isAnchor from users order by registrationTime desc`
     const res = await exec(sql)
     return new SuccessModel({
         data: res
@@ -397,7 +397,17 @@ const getRecordsIN = async (userid) => {
     return res[0].records
 
 }
-
+/**
+ * 判断是否是该直播间主播
+ */
+const isOnLiveAnchor = async (username, roomid) => {
+    const sql = `select * from liverooms where author='${username}' and id='${roomid}'`
+    const res = await exec(sql)
+    console.log(res.length)
+    return new SuccessModel({
+        data: res
+    })
+}
 module.exports = {
     register,
     checkName,
@@ -412,5 +422,6 @@ module.exports = {
     gettobeAnchor,
     AuthAnchor,
     notAuth,
-    getRecordsIN
+    getRecordsIN,
+    isOnLiveAnchor
 }

@@ -1,16 +1,21 @@
 import React, { Component } from 'react';
 import AnimatedBook from '../../components/AnimatedBook'
-import { Card, Icon, Button, Empty, Modal, Checkbox, message, Spin, Upload, Avatar } from 'antd'
+import { Card, Icon, Button, Empty, Modal, Checkbox, message, Spin, Upload, Avatar, notification } from 'antd'
 import './style.less'
 import { connect } from 'react-redux'
 import CreateModal from './CreateModal'
 import EditModal from './EditModal'
 import { json } from '../../utils/ajax'
-
+import { ReSetPane, ReSetActivePane } from '../../store/actions'
+import { bindActionCreators } from 'redux'
+import LoadableComponent from '../../utils/LoadableComponent'
 
 const store = connect(
-    (state) => ({ user: state.user })
+    (state) => ({ user: state.user, panes: state.panes, activepane: state.activepane }),
+    (dispatch) => bindActionCreators({ ReSetPane, ReSetActivePane }, dispatch)
+
 )
+const LiveRoom = LoadableComponent(import('./LiveRoom'), true)
 
 @store
 class Collection extends Component {
@@ -35,6 +40,8 @@ class Collection extends Component {
         this.getUnTJCollections()
         this.getTJCollections()
     }
+
+
 
     /**
      * 获得在播列表
@@ -254,7 +261,49 @@ class Collection extends Component {
             }
         })
     }
-
+    /**
+     * 点击侧边栏菜单添加标签页
+     */
+    addPane = async (e) => {
+        const panes = this.props.panes.slice()
+        const activeMenu = e.target.dataset.key
+        let flag = true
+        for (let item of panes) {
+            var p = /[0-9]/; //true,说明有数字
+            if (p.test(item.key)) {
+                flag = false
+            }
+        }
+        if (!!flag) {
+            //如果标签页不存在就添加一个
+            if (!panes.find(i => i.key === activeMenu)) {
+                let value = {
+                    author: e.target.dataset.author,
+                    title: e.target.dataset.name,
+                    avatar: e.target.dataset.avatar,
+                    createTime: e.target.dataset.create,
+                    roomid: e.target.dataset.key,
+                    des: e.target.dataset.des
+                }
+                panes.push({
+                    name: `直播间：${e.target.dataset.name}`,
+                    key: e.target.dataset.key,
+                    content: <LiveRoom room={value} />
+                })
+            }
+            if (panes.length != 0) {
+                await this.props.ReSetPane(panes)
+            }
+            await this.props.ReSetActivePane(activeMenu)
+        } else {
+            notification.success({
+                message: '提示',
+                description: '同一时间只允许打开一个直播间哦',
+                duration: 3,
+                icon: <Icon type="smile" />,
+            });
+        }
+    }
 
     render() {
         const { collections, isShowCreateModal, isShowEditModal, loading } = this.state
@@ -301,11 +350,11 @@ class Collection extends Component {
                                         </div>
                                     )}
                                     content={(
-                                        <div className='content-box'>
-                                            <div className='btn'>
-                                                <Icon type="reddit" />
-                                                <p>介绍：</p>
+                                        <div className='content-box' >
+                                            <div className='btn' style={{ textAlign: 'center' }}>
+                                                <p>简介</p>
                                                 <p>&nbsp;&nbsp;&nbsp;&nbsp;{(item.description) ? item.description : '本直播间很神秘，暂无介绍~'}</p>
+                                                <Button type='primary' data-des={item.description} data-name={item.title} data-key={item.id} data-author={item.author} data-avatar={item.roomavatar} data-create={item.createTime} onClick={(e) => this.addPane(e)}>进入直播间</Button>
                                             </div>
                                         </div>
                                     )}

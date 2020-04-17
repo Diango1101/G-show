@@ -235,7 +235,38 @@ const UpdateRoom = async (room) => {
     }
 }
 
+/**
+ * 是否是本房主播
+ */
+const isRoomLiver = async (param) => {
+    const { username, roomid } = param
+    const sql = `select * from liverooms where id='${roomid}' and author='${username}'`
+    console.log(sql)
+    const res = await exec(sql)
+    console.log(res)
+    if (res.length > 0) {
+        return new SuccessModel({
+            data: true,
+        })
+    } else {
+        return new SuccessModel({
+            data: false,
+        })
+    }
+}
 
+/**
+ * 查询本房主播
+ */
+const getTheRoomLiver = async (param) => {
+    const { roomid } = param
+    const sql = `select author from liverooms where id='${roomid}'`
+    const res = await exec(sql)
+    console.log(res[0].author)
+    return new SuccessModel({
+        data: res[0].author,
+    })
+}
 module.exports = {
     createRooms,
     getLiveRooms,
@@ -248,5 +279,7 @@ module.exports = {
     TuijianRooms,
     UnTuijianRooms,
     UpdateRoom,
-    JieFengRooms
+    JieFengRooms,
+    isRoomLiver,
+    getTheRoomLiver
 }

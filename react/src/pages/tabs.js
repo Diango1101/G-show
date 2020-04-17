@@ -10,32 +10,32 @@ const MessageBoard = LoadableComponent(import('./MessageBoard/index'), true);
 const Chat = LoadableComponent(import('./Chat/index'), true);
 const About = LoadableComponent(import('./About/index'), true);
 const Presents = LoadableComponent(import('./Presents/index'), true);
-const PresentRecords = LoadableComponent(import('./PresentRecords/index'))
-const Games = LoadableComponent(import('./Games/index'))
-const GameRecords = LoadableComponent(import('./GameRecords/index'))
+const PresentRecords = LoadableComponent(import('./PresentRecords/index'), true)
+const Games = LoadableComponent(import('./Games/index'), true)
+const GameRecords = LoadableComponent(import('./GameRecords/index'), true)
 const menu = [
-    {
-        name: 'antd',
-        icon: 'ant-design',
-        key: 'antd',
-        children: [
-            {
-                name: '按钮',
-                icon: '',
-                key: 'ButtonDemo',
-            },
-            {
-                name: '图标',
-                icon: '',
-                key: 'IconDemo',
-            },
-            {
-                name: '反馈',
-                icon: '',
-                key: 'FeedbackDemo',
-            },
-        ]
-    },
+    // {
+    //     name: 'antd',
+    //     icon: 'ant-design',
+    //     key: 'antd',
+    //     children: [
+    //         {
+    //             name: '按钮',
+    //             icon: '',
+    //             key: 'ButtonDemo',
+    //         },
+    //         {
+    //             name: '图标',
+    //             icon: '',
+    //             key: 'IconDemo',
+    //         },
+    //         {
+    //             name: '反馈',
+    //             icon: '',
+    //             key: 'FeedbackDemo',
+    //         },
+    //     ]
+    // },
     {
         name: '用户管理',
         icon: 'user',
@@ -84,7 +84,7 @@ const menu = [
 ]
 
 const tabs = {
-    ButtonDemo: <ButtonDemo />,
+    // ButtonDemo: <ButtonDemo />,
     IconDemo: <IconDemo />,
     FeedbackDemo: <FeedbackDemo />,
     Users: <Users />,

@@ -34,7 +34,7 @@ function filterFromroomId(roomid, arr) {
 //     avatar: 'http://localhost:8888/myUpload/order_org.png' }
 
 
-// 需添加roomId ,isLives
+// 需添加roomId ,isLives 表示是否是图文直播信息,isOnlive 表示是否是本房主播
 
 
 const server = ws.createServer(function (connection) {
@@ -50,11 +50,19 @@ const server = ws.createServer(function (connection) {
             const isExist = onlineList.find(item => item.id === connection.user.id)
             onlineList.push(info)
             let newOnlineList = filterFromroomId(connection.user.roomId, onlineList)
-            const data = {
-                onlineList: unique(newOnlineList),
-                text: isExist ? '' : `用户${connection.user.username}已进入直播间`
+            if (!connection.user.isOnlive) {
+                const data = {
+                    onlineList: unique(newOnlineList),
+                    text: isExist ? '' : `用户${connection.user.username}已进入直播间`
+                }
+                broadcast(data, msgType.onlineInfo, connection.user.roomId)
+            } else {
+                const data = {
+                    onlineList: unique(newOnlineList),
+                    text: isExist ? '' : `本房主播${connection.user.username}已进入直播间`
+                }
+                broadcast(data, msgType.onlineInfo, connection.user.roomId)
             }
-            broadcast(data, msgType.onlineInfo, connection.user.roomId)
             // 主播进入直播间
             if (isAnchor) {
                 let Anchordata = {
@@ -94,7 +102,9 @@ const server = ws.createServer(function (connection) {
         const index = onlineList.findIndex(item => item.id === connection.user.id)
         onlineList.splice(index, 1)   //只删除一个连接
         const isExist = onlineList.find(item => item.id === connection.user.id)
+        console.log('onlineList', onlineList)
         let newOnlineList = filterFromroomId(connection.user.roomId, onlineList)
+        console.log('newOnlineList', newOnlineList)
         const data = {
             onlineList: unique(newOnlineList),
             text: isExist ? '' : `用户${connection.user.username}已离开直播间`
@@ -108,6 +118,7 @@ const server = ws.createServer(function (connection) {
         } else {
             broadcast(data, msgType.onlineInfo, connection.user.roomId)
         }
+
     })
 
     // 连接错误

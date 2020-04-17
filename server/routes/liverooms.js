@@ -1,5 +1,5 @@
 const router = require('koa-router')()
-const { createRooms, getLiveRooms, deleteRooms, getLiveRoom, StopRooms, TuijianRooms, UpdateRoom, JieFengRooms, getStopRooms, getUnTJRooms, getTJLiveRooms, UnTuijianRooms } = require('../controller/liverooms')
+const { createRooms, getLiveRooms, deleteRooms, getLiveRoom, StopRooms, TuijianRooms, UpdateRoom, JieFengRooms, getStopRooms, getUnTJRooms, getTJLiveRooms, UnTuijianRooms, isRoomLiver, getTheRoomLiver } = require('../controller/liverooms')
 const { PositiveIntegerValidator, NotEmptyValidator } = require('./validators/validator')
 const { getUser } = require('../controller/user')
 
@@ -182,9 +182,16 @@ router.post('/updateRoom', async function (ctx, next) {
     handleRes(ctx, next, res)
 })
 
+router.post('/isTheRoomLiver', async function (ctx, next) {
+    const res = await isRoomLiver(ctx.request.body)
+    handleRes(ctx, next, res)
 
+})
 
-
+router.post('/getThisRoomLiver', async function (ctx, next) {
+    const res = await getTheRoomLiver(ctx.request.body)
+    handleRes(ctx, next, res)
+})
 
 
 

@@ -1,7 +1,15 @@
 import React from 'react'
 import { Menu, Icon } from 'antd'
 import { tabs, menu } from '../tabs'
+import { ReSetPane, ReSetActivePane } from '@/store/actions'
+import { connect, } from 'react-redux'
+import { bindActionCreators } from 'redux'
 
+const store = connect(
+    (state) => ({ panes: state.panes, activepane: state.activepane }),
+    (dispatch) => bindActionCreators({ ReSetPane, ReSetActivePane }, dispatch)
+)
+@store
 class MySider extends React.Component {
     /**
      * 生成侧边栏菜单
@@ -29,6 +37,7 @@ class MySider extends React.Component {
      * 点击侧边栏菜单添加标签页
      */
     addPane = (item) => {
+
         const panes = this.props.panes.slice()
         const activeMenu = item.key
         //如果标签页不存在就添加一个
@@ -39,10 +48,13 @@ class MySider extends React.Component {
                 content: tabs[item.key] || item.name
             })
         }
-        this.props.onChangeState({
+        console.log(this.props.panes)
+        this.props.onChangeState(
             panes,
             activeMenu
-        })
+        )
+
+
     }
     render() {
         const { activeMenu, theme } = this.props

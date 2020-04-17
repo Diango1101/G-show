@@ -124,10 +124,23 @@ const updateUserMessage = (user) => {
         console.log(555, res2)
     })
 }
+/**
+ * 点赞
+ * @param {*} user 
+ */
+const like = async (id) => {
+    const sql = `update messages set likeNum=(likeNum+1) where id='${id}'`
+    console.log(sql)
+    const res = await exec(sql)
+    return new SuccessModel({
+        message: `点赞成功~`,
+    })
+}
 
 module.exports = {
     createMessage,
     getMessages,
     deleteMessage,
-    updateUserMessage
+    updateUserMessage,
+    like
 }

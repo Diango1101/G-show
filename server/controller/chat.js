@@ -27,6 +27,7 @@ const getChatList = async (roomid) => {
         roomId = roomid
     }
     const sql = `select * from chats where roomid='${roomId}' order by createTime DESC limit 100`
+    console.log(sql, roomid)
     const res = await exec(sql)
     return new SuccessModel({
         data: res.reverse()

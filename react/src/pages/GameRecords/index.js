@@ -148,8 +148,14 @@ class GameRecords extends Component {
             userid: userid
         })
         if (res.status == 0) {
+            let result = (
+                <div>
+                    <p>您共参加了{res.data.winCounts + res.data.loseCounts}次游戏，投入{res.data.totalCost}分，收获{res.data.totalGet}分，净赚{res.data.totalGet - res.data.totalCost}分哦</p>
+                    <p>您成功预测了{res.data.winCounts}场比赛，成功率高达{String((res.data.winCounts / (res.data.winCounts + res.data.loseCounts)) * 100).replace(/^(.*\..{3}).*$/, "$1")}%哦</p>
+                </div>
+            )
             this.setState({
-                totalAlert: `您共参加了${res.data.winCounts + res.data.loseCounts}次游戏，投入${res.data.totalCost}分，收获${res.data.totalGet}分，净赚${res.data.totalGet - res.data.totalCost}分哦`
+                totalAlert: result
             })
         } else {
             this.setState({
@@ -359,7 +365,7 @@ class GameRecords extends Component {
 
                     <div style={{ marginBottom: 16, marginTop: 16, textAlign: 'right' }}>
                         <Popover placement="left" content={totalAlert} title="个人战况小结" trigger="click">
-                            <Button icon="area-char" onClick={() => this.getUserTotals(RealUser.id)}>获取自己战况汇总</Button>
+                            <Button type="primary" icon="area-char" onClick={() => this.getUserTotals(RealUser.id)}>获取自己战况汇总</Button>
                         </Popover>
                     </div>
                     <Table

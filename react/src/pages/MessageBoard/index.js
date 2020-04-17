@@ -234,13 +234,21 @@ class MessageBoard extends Component {
     /**
      * 点击赞
      */
-    onLike = () => {
-        notification.warning({
-            message: '提示',
-            description: '暂不支持点赞功能',
-            duration: 3,
-            // icon: <Icon type="smile" />,
-        });
+    onLike = async (id) => {
+        const res = await json.post('/message/like', {
+            'id': id
+        })
+        if (res.status === 0) {
+            this.getMessages()
+            notification.success({
+                message: '提示',
+                description: '点赞成功~',
+                duration: 3,
+                icon: <Icon type="smile" />,
+            });
+        }
+
+
     }
     renderActions = (item, pid) => {
         let actions = [
@@ -251,7 +259,14 @@ class MessageBoard extends Component {
             </span>,
             <span style={styles.actionItem}>
                 <Tooltip title="赞">
-                    <span onClick={this.onLike}>
+                    <span>
+                        {item.likeNum}人觉得很赞
+                </span>
+                </Tooltip>
+            </span>,
+            <span style={styles.actionItem}>
+                <Tooltip title="赞">
+                    <span onClick={() => this.onLike(item.id)}>
                         <Icon type="like" />&nbsp;赞
                     </span>
                 </Tooltip>
@@ -298,7 +313,7 @@ class MessageBoard extends Component {
         }
     }
     pageChange = (page) => {
-        this.getMessages(page,this.state.pagination.pageSize)
+        this.getMessages(page, this.state.pagination.pageSize)
     }
     pageSizeChange = (current, size) => {
         this.getMessages(1, size)
@@ -336,7 +351,7 @@ class MessageBoard extends Component {
                                         />
                                     </div>
                                     <Button type='primary' onClick={this.sendMessage}>发表</Button>&emsp;
-                                <Button onClick={this.closeMessage}>取消</Button>
+                                    <Button onClick={this.closeMessage}>取消</Button>
                                 </div>
                             ) : <Button onClick={() => this.setState({ isShowEditor: true })}>我要留言</Button>
                         }
@@ -376,7 +391,7 @@ class MessageBoard extends Component {
                                         <div style={{ width: '70%', textAlign: 'right' }}>
                                             <TextArea rows={4} style={{ marginBottom: 10 }} value={replyContent} onChange={this.handleReplyChange} placeholder={placeholder} />
                                             <Button size='small' onClick={this.closeReply}>取消</Button>&emsp;
-                                        <Button size='small' type='primary' onClick={() => this.confirmReply(item)}>回复</Button>
+                                            <Button size='small' type='primary' onClick={() => this.confirmReply(item)}>回复</Button>
                                         </div>
                                     )}
                                 </Comment>

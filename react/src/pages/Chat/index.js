@@ -1,10 +1,4 @@
-/*
- * @Description: In User Settings Edit
- * @Author: your name
- * @Date: 2019-07-07 11:03:21
- * @LastEditTime: 2019-08-25 16:05:10
- * @LastEditors: Please set LastEditors
- */
+
 import React, { Component } from "react";
 import { message, Avatar, Divider } from "antd";
 import { initChatList, initWebSocket } from "@/store/actions";
@@ -24,7 +18,8 @@ const store = connect(
         user: state.user,
         websocket: state.websocket,
         chatList: state.chatList,
-        onlineList: state.onlineList
+        onlineList: state.onlineList,
+        isDown: '',   //解决多开时聊天室拖拽失控
     }),
     dispatch =>
         bindActionCreators(
@@ -181,7 +176,11 @@ class Chat extends Component {
     onMouseDown = e => {
         e.persist();
         e.preventDefault();
-        this.isDown = true;
+        // this.isDown = true;
+        this.setState({
+            isDown: true
+        })
+        console.log('downdowndown')
         this.chatHeader.style.cursor = "move";
         //保存初始位置
         this.mouse = {
@@ -193,7 +192,7 @@ class Chat extends Component {
     };
     //节流函数优化
     onMouseMove = throttle(e => {
-        if (!this.isDown) {
+        if (!this.state.isDown) {
             return;
         }
         //计算偏移位置
@@ -211,7 +210,10 @@ class Chat extends Component {
         this.chatBox.style.top = offsetTop + "px";
     }, 10);
     onMouseUp = () => {
-        this.isDown = false;
+        // this.isDown = false;
+        this.setState({
+            isDown: false
+        })
         this.chatHeader.style.cursor = "default";
         this.mouse = null;
     };
@@ -287,6 +289,7 @@ class Chat extends Component {
         const lastChat = chatList[chatList.length - 1] || {};
         return (
             <div className="chat-container" ref={el => (this.chatContainer = el)}>
+                {/* <div style={{ width: '69vw', height: '80vh', backgroundColor: 'red' }}></div> */}
                 <div className="chat-box" ref={el => (this.chatBox = el)}>
                     <div
                         className="chat-header"
@@ -313,7 +316,7 @@ class Chat extends Component {
                                 </div>
                                 <div className="left-item-text">
                                     <div className="group-name">
-                                        <span> 聊天室01 </span>{" "}
+                                        <span> 公共聊天室 </span>{" "}
                                         <span>
                                             {" "}
                                             {
@@ -334,7 +337,7 @@ class Chat extends Component {
                                             }}
                                         >
                                             {" "}
-                                            {lastChat.username}: & nbsp;{" "}
+                                            {lastChat.username}: &nbsp;{" "}
                                         </div>{" "}
                                         <div
                                             className="ellipsis"
@@ -488,7 +491,7 @@ class Chat extends Component {
                                         </div>{" "}
                                         <div
                                             style={{
-                                                display: userList[index].isAdmin ? "block" : "none"
+                                                display: (userList[index].isAdmin) ? "block" : "none"
                                             }}
                                         >
                                             {" "}
@@ -498,7 +501,22 @@ class Chat extends Component {
                                                 src={require("./imgs/administrator.png")}
                                                 alt=""
                                             />{" "}
-                                        </div>{" "}
+                                        </div>
+                                        <div
+                                            style={{
+                                                display: (userList[index].isAnchor) ? "block" : "none"
+                                            }}
+                                        >
+                                            {" "}
+                                            <img
+                                                width={14}
+                                                height={15}
+                                                src={require("./imgs/anchor.png")}
+                                                alt=""
+                                                className='anchor'
+                                            />{" "}
+                                        </div>
+                                        {" "}
                                     </div>
                                 )}
                             />{" "}

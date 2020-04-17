@@ -19,7 +19,7 @@ const addLives = async (param) => {
 }
 
 /**
- * 获取最新聊天记录前100条
+ * 获取最新直播记录前100条
  */
 const getLiveList = async (roomid) => {
     const sql = `select * from lives where roomId='${roomid}' order by createTime DESC limit 100`
