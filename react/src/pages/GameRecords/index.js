@@ -320,14 +320,14 @@ class GameRecords extends Component {
                                 </Form.Item>
                             </Col>
                             <Col span={5}>
-                                <Form.Item label="注册开始时间">
+                                <Form.Item label="下注开始时间">
                                     {getFieldDecorator('startTime')(
                                         <DatePicker style={{ width: 200 }} showTime />
                                     )}
                                 </Form.Item>
                             </Col>
                             <Col span={5}>
-                                <Form.Item label="注册截止时间">
+                                <Form.Item label="下注截止时间">
                                     {getFieldDecorator('endTime')(
                                         <DatePicker style={{ width: 200 }} showTime />
                                     )}

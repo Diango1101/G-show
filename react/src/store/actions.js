@@ -174,11 +174,6 @@ export function initRoomWebSocket(user, room, isOnlive) {    //初始化roomwebs
             //聊天的消息
             if (data.type === 1) {
                 dispatch(addRoomChat(data.msg))
-                // notification.open({
-                //     message: data.msg.username,
-                //     description: <div style={{ wordBreak: 'break-all' }} dangerouslySetInnerHTML={{ __html: replaceImg(data.msg.content) }} />,
-                //     icon: <Avatar src={data.msg.userAvatar} />
-                // })
             }
             if (data.type === 2) {
                 dispatch(addRoomLive(data.msg))

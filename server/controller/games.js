@@ -145,7 +145,7 @@ const getAllGames = async function (games) {
 }
 
 /**
- *   结束某场游戏  前端加条件仅超管和房管可添加
+ *   结束某场游戏  前端加条件仅超管可添加
  */
 const stopGame = async function (param) {
     const result = await getIsSet(param)

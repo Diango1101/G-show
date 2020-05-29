@@ -29,7 +29,7 @@ class Background extends React.Component {
         this.setState({
             loading: true
         })
-        //当图片载入完成后再显示背景
+        // 当图片载入完成后再显示背景
         this.loadImageAsync(this.props.url).then(() => {
             this.setState({
                 loading: false

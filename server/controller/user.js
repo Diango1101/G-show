@@ -111,7 +111,7 @@ const getIpInfo = async function (ctx) {
 /**
  * 登陆
  * @param {*} username 
- * @param {*} password 
+ * @param {*} password  
  * @param {*} ctx 
  */
 const login = async function (username, password, ctx) {

@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { message, Avatar, Divider, Spin } from "antd";
+import { message, Avatar, Divider, Spin, Tag } from "antd";
 import { initRoomChatList, initRoomWebSocket, initRoomLiveList } from "@/store/actions";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
@@ -469,7 +469,7 @@ class LiveRoom extends Component {
                                                 <div className="chat-main">
                                                     <div className="username">
                                                         {" "}
-                                                        {roomliveList[index].username}{" "}
+                                                        <Tag color="#FF0033" style={{ marginBottom: 5 }}>主播</Tag>{roomliveList[index].username}{" "}
                                                     </div>{" "}
                                                     <div
                                                         className="chat-content"

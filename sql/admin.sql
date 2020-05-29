@@ -1,7 +1,7 @@
 /*
  Navicat Premium Data Transfer
 
- Source Server         : admin-project
+ Source Server         : G-Show Live
  Source Server Type    : MySQL
  Source Server Version : 80016
  Source Host           : localhost:3306
@@ -11,7 +11,6 @@
  Target Server Version : 80016
  File Encoding         : 65001
 
- Date: 09/07/2019 16:38:19
 */
 
 SET NAMES utf8mb4;

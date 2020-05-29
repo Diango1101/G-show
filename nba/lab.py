@@ -1,41 +1,4 @@
 
-# coding: utf-8
-
-# # 利用 Python 进行 NBA 比赛数据分析
-
-# ---
-
-# ### 内容简介
-
-# 不知道你是否在朋友圈被刷屏过 NBA 的某场比赛进度或者结果？或者你就是一个 NBA 狂热粉，比赛中的每个进球、抢断或是逆转压哨球都能让你热血沸腾。除去观赏精彩的比赛过程，我们也同样好奇比赛的结果会是如何。因此本节课程，将给同学们展示如何使用 NBA 比赛的以往统计数据，判断每个球队的战斗力，及预测某场比赛中的结果。
-
-# 我们将基于 2015-2016 年的 **NBA** 常规赛及季后赛的比赛统计数据，预测在当下正在进行的 2016-2017 常规赛每场赛事的结果。
-
-# ![image](https://doc.shiyanlou.com/document-uid291340labid2647timestamp1489325776168.png/wm)
-
-# ### 实验知识点
-
-# *   NBA 球队的`Elo score`计算
-# *   特征向量
-# *   逻辑回归
-
-# ### 实验流程
-
-# 本次课程我们将按照下面的流程实现 **NBA** 比赛数据分析的任务：
-
-# 1.  获取比赛统计数据
-# 2.  比赛数据分析，得到代表每场比赛每支队伍状态的特征表达
-# 3.  利用**机器学习**方法学习每场比赛与胜利队伍的关系，并对 2016-2017 的比赛进行预测
-
-# ## 获取 NBA 比赛统计数据
-
-# ### 比赛数据介绍
-
-# 在本次实验中，我们将采用 [Basketball Reference.com](http://www.basketball-reference.com/) 中的统计数据。在这个网站中，你可以看到不同球员、队伍、赛季和联盟比赛的基本统计数据，如得分、犯规次数、胜负次数等情况。而我们在这里将会使用 **2015-2016 NBA Season Summary** 中的数据。
-
-# ![image](https://doc.shiyanlou.com/document-uid291340labid2647timestamp1489325761209.png/wm)
-
-# 在这个 2015-2016 总结的所有表格中，我们将使用的是以下三个数据表格：
 
 # *   **Team Per Game Stats**：每支队伍平均每场比赛的表现统计
 
@@ -96,15 +59,10 @@
 # | DRB% (Defensive Rebound Percentage) | 球队平均每个球员的防守篮板比例 |
 # | FT/FGA (Opponent Free Throws Per Field Goal Attempt) | 对手的罚球次数占投射次数的比例 |
 
-# > 毕达哥拉斯定律：
 
-# ![image](https://doc.shiyanlou.com/document-uid291340labid2647timestamp1490108859908.png/wm)
 
-# 我们将用这三个表格来评估球队过去的战斗力，另外还需 **2015-2016 NBA Schedule and Results** 中的 2015~2016 年的 NBA 常规赛及季后赛的每场比赛的比赛数据，用以评估`Elo score`（在之后的实验小节中解释）。在`Basketball Reference.com`中按照从常规赛至季后赛的时间，列出了 2015 年 10 月份至 2016 年 6 月份的每场比赛的比赛情况。
 
-# ![image](https://doc.shiyanlou.com/document-uid291340labid2647timestamp1489325843917.png/wm)
-
-# 可在上图中看到 2015 年 10 月份的部分比赛数据。在每个 _Schedule_ 表格中所包含的数据为：
+#  _Schedule_ 表格中所包含的数据为：
 
 # | 数据项 | 数据含义 |
 # | --- | --- |
@@ -116,96 +74,24 @@
 # | PTS | 主场队伍最后得分 |
 # | Notes | 备注，表明是否为加时赛等 |
 
-# 在预测时，我们同样也需要在 **2016-2017 NBA Schedule and Results** 中 2016~2017 年的 NBA 的常规赛比赛安排数据。
-
-# ### 获取比赛数据
-
-# 我们将以获取 **Team Per Game Stats** 表格数据为例，展示如何获取这三项统计数据：
-
-# 1.  进入到 [Basketball Reference.com](http://www.basketball-reference.com/) 中，在导航栏中选择`Season`并选择`2015~2016`赛季中的`Summary`：
-
-# ![image](https://doc.shiyanlou.com/document-uid291340labid2647timestamp1489325866617.png/wm)
-
-# 2.  进入到 2015~2016 年的`Summary`界面后，滑动窗口找到`Team Per Game Stats`表格，并选择左上方的 **Share & more**，在其下拉菜单中选择 **Get table as CSV (for Excel)**：
-
-# ![image](https://doc.shiyanlou.com/document-uid291340labid2647timestamp1489325884435.png/wm)
-
-# 3.  复制在界面中生成的 csv 格式数据，并粘贴至一个文本编辑器保存为 csv 文件即可：
-
-# ![image](https://doc.shiyanlou.com/document-uid291340labid2647timestamp1489325928669.png/wm)
-
-# 为了方便同学们进行实验，我们已经将数据全部都保存成 _csv_ 文件上传至实验楼的云环境中。在后续的**代码实现**小节里将给出获取这些文件的地址。
-
-# ## 数据分析
-
-# 在获取到数据之后，我们将利用每支队伍**过去的比赛情况**和 **Elo 等级分**来判断每支比赛队伍的可胜概率。在评价到每支队伍过去的比赛情况时，将使用到 **Team Per Game Stats**、**Opponent Per Game Stats** 和 **Miscellaneous Stats**（之后简称为 **T、O 和 M** 表）这三个表格的数据，作为代表比赛中某支队伍的比赛特征。我们的目标是实现针对每场比赛，预测比赛中哪支队伍最终将会获胜，但并不是给出绝对的胜败情况，而是预判胜利的队伍有多大的获胜概率。因此我们将建立一个代表比赛的**特征向量**。由两支队伍的以往比赛统计情况（**T、O 和Ｍ**表）和两个队伍各自的 **Elo** 等级分构成。
-
-# 关于 **Elo score** 等级分，不知道同学们是否看过`《社交网络》`这部电影，在这部电影中，**Mark**（主人公原型就是扎克伯格，FaceBook 创始人）在电影起初开发的一个美女排名系统就是利用其好友 **Eduardo** 在窗户上写下的排名公式，对不同的女生进行等级制度对比，最后 PK 出胜利的一方。
-
-# ![image](https://doc.shiyanlou.com/document-uid291340labid2647timestamp1489325997201.png)
-
-# 这条对比公式就是 **Elo Score 等级分** 制度。Elo 的最初用于国际象棋中更好地对不同的选手进行等级划分。在现在很多的竞技运动或者游戏中都会采取 Elo 等级分制度对选手或玩家进行等级划分，如足球、篮球、棒球比赛或 LOL、DOTA 等游戏。
-
-# 在这里我们将基于国际象棋比赛，大致地介绍下 Elo 等级划分制度。在上图中 **Eduardo** 在窗户上写下的公式就是根据`Logistic Distribution`计算 PK 双方（A 和 B）对各自的胜率期望值计算公式。假设 A 和 B 的当前等级分为 <math><semantics><mrow><msub><mi>R</mi><mi>A</mi></msub></mrow><annotation encoding="application/x-tex">R_A</annotation></semantics></math>R​A​​和 <math><semantics><mrow><msub><mi>R</mi><mi>B</mi></msub></mrow><annotation encoding="application/x-tex">R_B</annotation></semantics></math>R​B​​，则 A 对 B 的胜率期望值为：
-
-# ![image](https://doc.shiyanlou.com/document-uid291340labid2647timestamp1490108812711.png)
-
-# B 对 A 的胜率期望值为
-
-# ![image](https://doc.shiyanlou.com/document-uid291340labid2647timestamp1490108823190.png)
-
-# 如果棋手 A 在比赛中的真实得分 <math><semantics><mrow><msub><mi>S</mi><mi>A</mi></msub></mrow><annotation encoding="application/x-tex">S_A</annotation></semantics></math>S​A​​（胜 1 分，和 0.5 分，负 0 分）和他的胜率期望值 <math><semantics><mrow><msub><mi>E</mi><mi>A</mi></msub></mrow><annotation encoding="application/x-tex">E_A</annotation></semantics></math>E​A​​不同，则他的等级分要根据以下公式进行调整：
-
-# ![image](https://doc.shiyanlou.com/document-uid291340labid2647timestamp1490108835437.png)
-
-# 在国际象棋中，根据等级分的不同 K 值也会做相应的调整：
-
-# *   大于等于2400，K=16
-# *   2100~2400 分，K=24
-# *   小于等于2100，K=32
-
-# 因此我们将会用以表示某场比赛数据的**特征向量**为（假如 A 与 B 队比赛）：[A 队 Elo score, A 队的 **T,O 和 M 表**统计数据，B 队 Elo score, B 队的 **T,O 和 M 表**统计数据]
-
-# ## 基于数据进行模型训练和预测
-
-# ### 实验前期准备
-
-# 在本次实验环境中，我们将会使用到 python 的`pandas`，`numpy`，`scipy`和`sklearn`库，实验楼的在线环境中都已经具备，无需手动安装。
-
-# 接下来，我们下载相应的数据文件并解压。
-
-# In[ ]:
+#  该表为处理后得到
+# 19-20Schedule 表格中所包含的数据为：
+# | 数据项 | 数据含义 |
+# | --- | --- |
+# | Date | 日期 |
+# | Start (ET) | 开始时间 |
+# | Vteam | 客场队伍 |
+# | Hteam | 主场队伍 |
 
 
-# # 获取数据文件
-# get_ipython().system('wget http://labfile.oss.aliyuncs.com/courses/782/data.zip')
-#
-# # 安装 unzip
-# get_ipython().system('apt-get install unzip')
-#
-# # 解压data压缩包并且删除该压缩包
-# get_ipython().system('unzip data.zip ')
-# get_ipython().system('rm -r data.zip')
-
-
-# 在`data`文件夹中，包含了 2015~2016 年的 NBA 数据 **T,O 和 M** 表，及经处理后的常规赛和挑战赛的比赛数据`2015-2016_result.csv`，这个数据文件是我们通过在`basketball-reference.com`的 2015-2016 Schedule and result 的几个月份比赛数据中提取得到的，其中包括三个字段：
-
-# *   WTeam: 比赛胜利队伍
-# *   LTeam: 失败队伍
-# *   WLoc: 胜利队伍一方所在的为主场或是客场 
-
-# 另外一个文件就是`16-17Schedule.csv`，也是经过我们加工处理得到的 NBA 在 2016-2017 年的常规赛的比赛安排，其中包括两个字段：
-
-# *   Vteam: 客场作战队伍
-# *   Hteam: 主场作战队伍
-
-# ### 代码实现
-
-# 下载完实验数据后，就可以正式开始实验了。
-
-# 首先，引入实验相关模块：
-
-# In[ ]:
+#  该表为最后结果
+# 19-20Result 表格中所包含的数据为：
+# | 数据项 | 数据含义 |
+# | --- | --- |
+# | date | 详细开始时间（转换为十三位时间戳） |
+# | win | 胜利队伍 |
+# | lose | 失败队伍 |
+# | probability | 获胜概率 |
 
 import ipython_genutils
 import pandas as pd
@@ -220,7 +106,6 @@ from sklearn.model_selection import cross_val_score
 
 # 设置回归训练时所需用到的参数变量：
 
-# In[ ]:
 
 
 # 当每支队伍没有elo等级分时，赋予其基础elo等级分
@@ -235,7 +120,6 @@ folder = 'data'
 
 # 在最开始需要初始化数据，从 **T、O 和 M** 表格中读入数据，去除一些无关数据并将这三个表格通过`Team`属性列进行连接：
 
-# In[ ]:
 
 
 # 根据每支队伍的Miscellaneous Opponent，Team统计数据csv文件进行初始化
@@ -251,7 +135,6 @@ def initialize_data(Mstat, Ostat, Tstat):
 
 # 获取每支队伍的`Elo Score`等级分函数，当在开始没有等级分时，将其赋予初始`base_elo`值：
 
-# In[ ]:
 
 
 def get_elo(team):
@@ -265,7 +148,6 @@ def get_elo(team):
 
 # 定义计算每支球队的`Elo等级分`函数：
 
-# In[ ]:
 
 
 # 计算每个球队的elo值
@@ -290,9 +172,7 @@ def calc_elo(win_team, lose_team):
     return new_winner_rank, new_loser_rank
 
 
-# 基于我们初始好的统计数据，及每支队伍的 **Elo score** 计算结果，建立对应 2015~2016 年常规赛和季后赛中每场比赛的数据集（在主客场比赛时，我们认为主场作战的队伍更加有优势一点，因此会给主场作战队伍相应加上 100 等级分）：
-
-# In[ ]:
+# 基于我们初始好的统计数据，及每支队伍的 **Elo score** 计算结果，建立对应 2018~2019 年常规赛和季后赛中每场比赛的数据集（在主客场比赛时，我们认为主场作战的队伍更加有优势一点，因此会给主场作战队伍相应加上 100 等级分）：
 
 
 def  build_dataSet(all_data):
@@ -326,6 +206,7 @@ def  build_dataSet(all_data):
 
         # 将两支队伍的特征值随机的分配在每场比赛数据的左右两侧
         # 并将对应的0/1赋给y值
+        # 由Elo score 的机制决定的，类似于一种人为设计好的特征提取方法
         if random.random() > 0.5:
             X.append(team1_features + team2_features)
             y.append(0)
@@ -341,13 +222,15 @@ def  build_dataSet(all_data):
         new_winner_rank, new_loser_rank = calc_elo(Wteam, Lteam)
         team_elos[Wteam] = new_winner_rank
         team_elos[Lteam] = new_loser_rank
-
+        # print("X",np.nan_to_num(X))
+        # print("Y",y)
+        # print("#################################################################")
+    #将可能出现的异常NAN转换为0  防止异常发生
     return np.nan_to_num(X), y
 
 
 # 最终在 main 函数中调用这些数据处理函数，使用 sklearn 的`Logistic Regression`方法建立回归模型：
 
-# In[ ]:
 
 
 if __name__ == '__main__':
@@ -372,11 +255,10 @@ if __name__ == '__main__':
     print(cross_val_score(model, X, y, cv = 10, scoring='accuracy', n_jobs=-1).mean())
 
 
-# 最终利用训练好的模型在 16~17 年的常规赛数据中进行预测。
+# 最终利用训练好的模型在 19~20 年的常规赛数据中进行预测。
 # 
 # 利用模型对一场新的比赛进行胜负判断，并返回其胜利的概率：
 
-# In[ ]:
 
 
 def predict_winner(team_1, team_2, model):
@@ -396,12 +278,11 @@ def predict_winner(team_1, team_2, model):
     return model.predict_proba([features])
 
 
-# 在 main 函数中调用该函数，并将预测结果输出到`16-17Result.csv`文件中：
-
-# In[ ]:
+# 在 main 函数中调用该函数，并将预测结果输出
 
 
-# 利用训练好的model在16-17年的比赛中进行预测
+
+# 利用训练好的model在19_20年的比赛中进行预测
 
 print('Predicting on new schedule..')
 schedule1617 = pd.read_csv(folder + '/19-20Schedule.csv')
@@ -432,43 +313,7 @@ with open('19-20Result.csv', 'w',newline='') as f:
     print('done.')
 
 
-# 最后，我们实验 Pandas 预览生成预测结果文件`16-17Result.csv`文件：
-
-# In[ ]:
-
-
 pd.read_csv('19-20Result.csv',header=0)
 
 
-# ### 实验总结
 
-# 在本节课程中，我们利用`Basketball-reference.com`的部分统计数据，计算每支 NBA 比赛队伍的`Elo socre`，和利用这些基本统计数据评价每支队伍过去的比赛情况，并且根据国际等级划分方法`Elo Score`对队伍现在的战斗等级进行评分，最终结合这些不同队伍的特征判断在一场比赛中，哪支队伍能够占到优势。但在我们的预测结果中，与以往不同，我们没有给出绝对的正负之分，而是给出胜算较大一方的队伍能够赢另外一方的概率。当然在这里，我们所采用评价一支队伍性能的数据量还太少（只采用了 15~16 年一年的数据），如果想要更加准确、系统的判断，有兴趣的你当然可以从各种统计数据网站中获取到更多年份，更加全面的数据。结合不同的**回归**、**决策**机器学习模型，搭建一个更加全面、预测准确率更高的模型。在 [kaggle](https://www.kaggle.com/) 中有相关的篮球预测比赛项目，有兴趣的同学可尝试一下。
-
-# ## 参考阅读
-
-# *   [知乎：在哪能看到最全面细致的 NBA 数据统计](https://www.zhihu.com/question/19952290)
-# *   [How I won my NCAA tournament bracket pool using machine learning](http://ftw.usatoday.com/2016/04/villanova-bracket-winner)
-
-# ## 课后习题
-
-# 本次课程中，我们只是利用了`scikit-learn`提供的`Logisitc Regression`方法进行回归模型的训练，你可否尝试`scikit-learn`中的其他机器学习方法，或者其他类似于`TensorFlow`的开源框架，结合我们所提供的数据集进行训练。若采用`scikit-learn`中的方法，可参看实验楼的课程：[ebay 在线拍卖数据分析](https://www.shiyanlou.com/courses/714)。或是结合下图进行模型的尝试：
-
-# ![image](https://doc.shiyanlou.com/document-uid291340labid2647timestamp1489329035758.png)
-
-# ## 常见疑问解答补充
-
-# 在这里我们将对之前在文档中解释得比较模糊的部分做一点补充，之后有疑问的话欢迎同学们在课程讨论区提出讨论。
-
-# `Q1：` 在生成训练集时，“将特征值随机分配在每场比赛数据的左右侧” 是什么意思？为什么要做如下的随机分配：
-
-# ![image](https://doc.shiyanlou.com/document-uid291340labid2647timestamp1491839921983.png)
-
-# `Ans:` 将胜利队伍和失败队伍的特征值随机分配到每场比赛数据的左右侧的意思是，为了随机产生 [winTeam, loseTeam]（胜利队伍特征值在左侧，对应的 y 值标签为 0），[loseTeam, winTeam]（失败队伍在左侧， 对应的 y 值标签为 1）这样的训练样本。你也可以固定利用数据集前一半为 [winTeam, loseTeam]，后一半为 [loseTeam, winTeam] 这样来生成数据。只要保证两类数据的分布比较均衡，且在训练时随机的取到两类训练样本即可。
-
-# `Q2:` 为什么按照 **X: [winTeam, loseTeam]** 对应标签 **Y: 0**，**X: [loseTeam, winTeam]** 对应标签 **Y: 1**，这样的取法在后边进行预测 **[team1, team2]** 的比赛结果时，是否应该按照 <math><semantics><mrow><mi>p</mi><mi>r</mi><mi>o</mi><mi>b</mi><mo><</mo><mn>0</mn><mi mathvariant="normal">.</mi><mn>5</mn></mrow><annotation encoding="application/x-tex">prob<0.5</annotation></semantics></math>prob<0.5 时 **team1** 胜出，胜出概率为 <math><semantics><mrow><mn>1</mn><mo>−</mo><mi>p</mi><mi>r</mi><mi>o</mi><mi>b</mi></mrow><annotation encoding="application/x-tex">1-prob</annotation></semantics></math>1−prob，<math><semantics><mrow><mi>p</mi><mi>r</mi><mi>o</mi><mi>b</mi><mo>></mo><mn>0</mn><mi mathvariant="normal">.</mi><mn>5</mn></mrow><annotation encoding="application/x-tex">prob>0.5</annotation></semantics></math>prob>0.5 时 **team2** 胜出，胜出概率为 <math><semantics><mrow><mi>p</mi><mi>r</mi><mi>o</mi><mi>b</mi></mrow><annotation encoding="application/x-tex">prob</annotation></semantics></math>prob？
-
-# `Ans:` 可查看 [sklearn logistic regression api](http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html#sklearn.linear_model.LogisticRegression) 中有关`predict_prob`的函数定义。
-
-# `predict_prob`返回的是对于测试样本中跟不同类别的匹配程度（概率，Probability estimates）, 对于 **N** 个类别，`predict_prob`返回的则是一个 **N 维数组**，按照类别顺序对应这个测试样本分别属于这些类别的可能性。在实验中我取的是`predict_prob[0]`，所以是测试样本属于**类别 1[winTeam, loseTeam]** 的可能性。因此当返回的值大于`0.5`时，我们则认为是 **team1** 胜出，其概率为`predict_prob[0]`，否则是 **team2** 胜出，胜出概率为`1-predict_prob[0]`
-
-# <div style="color: #999;font-size: 12px;">©️ 本课程内容，由作者授权实验楼发布，未经允许，禁止转载、下载及非法传播。</div>
