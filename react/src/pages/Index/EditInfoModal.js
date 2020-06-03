@@ -68,7 +68,7 @@ class EditInfoModal extends React.Component {
             //修改redux中的user信息
             this.props.setUser(res.data)
             //修改websocket中的user信息
-            if (this.props.websocket.readyState !== 1) {
+            if (!this.props.websocket || this.props.websocket.readyState !== 1) {
                 this.props.initWebSocket(res.data)
             } else {
                 this.props.websocket.send(JSON.stringify({
@@ -78,8 +78,8 @@ class EditInfoModal extends React.Component {
                 }))
             }
             //修改roomwebsocket中信息
-            if (this.props.roomwebsocket.readyState !== 1) {
-                this.props.initRoomWebSocket(res.data)
+            if (!this.props.roomwebsocket || this.props.roomwebsocket.readyState !== 1) {
+                // this.props.initRoomWebSocket(res.data)
             } else {
                 this.props.roomwebsocket.send(JSON.stringify({
                     id: res.data.id,

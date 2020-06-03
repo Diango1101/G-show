@@ -34,7 +34,7 @@ class UpdateModal extends Component {
         console.log('update', value)
         const res = await json.post('/presents/updatePresent', value)
         if (res.status === 0) {
-            message.success(`新增礼物成功`)
+            message.success(`修改礼物成功`)
             this.props.onUpdated()  //更新外面的数据
             this.onCancel()
         }

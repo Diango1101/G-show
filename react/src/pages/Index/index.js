@@ -18,8 +18,8 @@ class Index extends React.Component {
     //因为这些状态在不同组件中使用了，所以这里使用了状态提升（这里也可以用状态管理,为了学习这里就使用状态提升）
     state = {
         collapsed: false,  //侧边栏的折叠和展开
-        panes: [],    //网站打开的标签页列表
-        activeMenu: '',  //网站活动的菜单
+        // panes: [],    //网站打开的标签页列表
+        // activeMenu: '',  //网站活动的菜单
         theme: localStorage.getItem('theme') || 'dark',   //侧边栏主题
     };
     componentDidMount() {

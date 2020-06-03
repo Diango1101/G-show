@@ -16,7 +16,7 @@ if (env === 'production') {
     MYSQL_CONF = {
         host: 'localhost',
         user: 'root',
-        password: '1234567890',
+        password: 'amd7749123',
         port: '3306',
         database: 'gshow',
         charset: 'utf8mb4'   //字符集一定要写，否则表情包存储不了
